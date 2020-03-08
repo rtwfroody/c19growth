@@ -26,16 +26,21 @@
             var sequence = {};
             for (var i = 1; i < csv_data.length; i++) {
                 row = csv_data[i]
-                name = row[country_region]
-                for (var j = first_date; j < row.length; j++) {
-                    row[j] = parseInt(row[j])
+                var names = [row[country_region]]
+                if (row[country_region] == "US") {
+                    names.push(row[province_state].replace(/.*, */, ""))
                 }
-                if (name in sequence) {
+                for (name of names) {
                     for (var j = first_date; j < row.length; j++) {
-                        sequence[name][j - first_date] += row[j];
+                        row[j] = parseInt(row[j])
                     }
-                } else {
-                    sequence[name] = row.slice(first_date, row.length)
+                    if (name in sequence) {
+                        for (var j = first_date; j < row.length; j++) {
+                            sequence[name][j - first_date] += row[j];
+                        }
+                    } else {
+                        sequence[name] = row.slice(first_date, row.length)
+                    }
                 }
             }
 	    data['sequence'] = sequence
