@@ -23,27 +23,31 @@
             header = csv_data[0]
             data['dates'] = header.slice(first_date, header.length);
 
-            var sequence = {};
+            var sequence_map = {};
             for (var i = 1; i < csv_data.length; i++) {
                 row = csv_data[i]
-                var names = [row[country_region]]
+                var ids = [["Country", row[country_region]]]
                 if (row[country_region] == "US") {
-                    names.push(row[province_state].replace(/.*, */, ""))
+                    ids.push(["US State", row[province_state].replace(/.*, */, "")])
                 }
-                for (name of names) {
+                for (id of ids) {
                     for (var j = first_date; j < row.length; j++) {
                         row[j] = parseInt(row[j])
                     }
-                    if (name in sequence) {
+                    if (id in sequence_map) {
                         for (var j = first_date; j < row.length; j++) {
-                            sequence[name][j - first_date] += row[j];
+                            sequence_map[id].data[j - first_date] += row[j];
                         }
                     } else {
-                        sequence[name] = row.slice(first_date, row.length)
+                        sequence_map[id] = {}
+                        sequence_map[id].id = id
+                        sequence_map[id].data = row.slice(first_date, row.length)
+                        sequence_map[id].group = id[0]
+                        sequence_map[id].name = id[1]
                     }
                 }
             }
-	    data['sequence'] = sequence
+            data['sequences'] = Object.values(sequence_map)
 	}
 
         const continent_table = {
@@ -91,10 +95,13 @@
 	function updateForm() {
 	    var div = document.getElementById("options_form");
 	    var form = document.createElement("form");
-	    for (name of Object.keys(data['sequence']).sort()) {
+	    for (sequence of data['sequences']) {
+                group = sequence.group
+                name = sequence.name
 		var input = document.createElement('input');
 		input.setAttribute("type", "checkbox");
-		input.setAttribute("id", name);
+		input.setAttribute("id", sequence.id);
+                console.log(group, name)
 		if (name == "US") {
 		    input.setAttribute("checked", true);
 		}
@@ -111,15 +118,15 @@
 
         function updateGraph() {
             var traces = [];
-            for (var name in data['sequence']) {
-		checkbox = document.getElementById(name)
+            for (sequence of data['sequences']) {
+		checkbox = document.getElementById(sequence.id)
 		if (!(checkbox.checked)) {
 		    continue
 		}
                 var trace = {
                     x: data['dates'],
-                    y: data['sequence'][name],
-                    name: name
+                    y: sequence.data,
+                    name: sequence.name
                 };
                 traces.push(trace)
             }
