@@ -1,0 +1,63 @@
+<html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="node_modules/jquery-csv/src/jquery.csv.min.js"></script>
+</head>
+<body>
+    <div id="tester" style="width:90%;height:90%;"></div>
+    <script>
+        function updateGraph(data) {
+            province_state = 0;
+            country_region = 1;
+            lat = 2;
+            lng = 3;
+            first_date = 4;
+
+            var sequence = {};
+            header = data[0]
+            dates = header.slice(first_date, header.length);
+            for (var i = 1; i < data.length; i++) {
+                row = data[i]
+                name = row[country_region]
+                for (var j = first_date; j < row.length; j++) {
+                    row[j] = parseInt(row[j])
+                }
+                if (name in sequence) {
+                    for (var j = first_date; j < row.length; j++) {
+                        sequence[name][j - first_date] += row[j];
+                    }
+                } else {
+                    sequence[name] = row.slice(first_date, row.length)
+                }
+            }
+
+            var traces = [];
+            for (var name in sequence) {
+                var trace = {
+                    x: dates,
+                    y: sequence[name],
+                    name: name
+                };
+                traces.push(trace)
+            }
+
+            TESTER = document.getElementById('tester');
+            Plotly.newPlot( TESTER, traces, {
+                    margin: { t: 0 } } );
+        }
+
+        var data;
+	$.ajax({
+	  type: "GET",  
+	  url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv",
+	  dataType: "text",       
+	  success: function(response)  
+	  {
+		data = $.csv.toArrays(response);
+		updateGraph(data);
+	  }   
+	});
+    </script>
+</body>
+</html>
