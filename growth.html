@@ -5,14 +5,101 @@
     <script src="node_modules/jquery-csv/src/jquery.csv.min.js"></script>
 </head>
 <body>
-    <div id="tester" style="width:90%;height:90%;"></div>
+    <div id="tester" style="width:100%;height:80%;"></div>
+    <form>
+        <table>
+            <tr>
+                <td>
+                    <label for="group">Group by:</label>
+                    <select id="group" name="group">
+                        <option value="province_state">Province/State</option>
+                        <option value="country_region">Country/Region</option>
+                        <option value="continent">Continent</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="checkbox" id="show_africa" name="africa" value="Africa" checked>
+		    <label for="africa">Africa</label><br>
+                    <input type="checkbox" id="show_asia" name="asia" value="Asia" checked>
+		    <label for="asia">Asia</label><br>
+                    <input type="checkbox" id="show_europe" name="europe" value="Europe" checked>
+		    <label for="europe">Europe</label><br>
+                    <input type="checkbox" id="show_oceania" name="oceania" value="Oceania" checked>
+		    <label for="oceania">Oceania</label><br>
+                    <input type="checkbox" id="show_north_america" name="north_america" value="North America" checked>
+		    <label for="north_america">North America</label><br>
+                    <input type="checkbox" id="show_south_america" name="south_america" value="South America" checked>
+		    <label for="south_america">South America</label><br>
+                </td>
+                <td>
+                    <button type="button" onclick="updateGraph()">Submit</button>
+                </td>
+            </tr>
+        </table>
+        <p>
+        Data source: <a href="https://github.com/CSSEGISandData/COVID-19">COVID-19 Cases by Johns Hopkins University</a>.<br>
+        </p>
+    </form>
     <script>
-        function updateGraph(data) {
+        var data;
+
+        const continent_table = {
+            "Mainland China": "asia",
+            "Indonesia": "asia",
+            "Thailand": "asia",
+            "Japan": "asia",
+            "South Korea": "asia",
+            "Macau": "asia",
+            "Hong Kong": "asia",
+            "Morocco": "africa",
+            "Egypt": "africa",
+            "Portugal": "europe",
+            "Greece": "europe",
+            "Switzerland": "europe",
+            "Sweden": "europe",
+            "Spain": "europe",
+            "Belgium": "europe",
+            "Austria": "europe",
+            "Liechtenstein": "europe",
+            "Andorra": "europe",
+            "Ireland": "europe",
+            "Luxembourg": "europe",
+            "Monaco": "europe",
+            "Norway": "europe",
+            "Denmark": "europe",
+            "Netherlands": "europe",
+            "Iceland": "europe",
+            "New Zealand": "oceania",
+            "Australia": "oceania",
+            "Mexico": "north_america",
+            "US": "north_america",
+            "Canada": "north_america",
+            "Argentina": "south_america",
+            "Brazil": "south_america",
+        };
+        function get_continent(country) {
+            if (country in continent_table) {
+                return continent_table[country];
+            }
+            console.log("WARNING: Don't know continent for", country)
+            return "unknown";
+        }
+
+        function updateGraph() {
             province_state = 0;
             country_region = 1;
             lat = 2;
             lng = 3;
             first_date = 4;
+
+            const continents = ["africa", "asia", "europe", "oceania", "north_america", "south_america"];
+            var selected_continents = {}
+            for (continent of continents) {
+                console.log(continent, ":", $('#show_' + continent).is(':checked'));
+                if ($('#show_' + continent).is(':checked')) {
+                    selected_continents[continent] = true;
+                }
+            }
 
             var sequence = {};
             header = data[0]
@@ -20,6 +107,10 @@
             for (var i = 1; i < data.length; i++) {
                 row = data[i]
                 name = row[country_region]
+                continent = get_continent(name)
+                if (!(continent in selected_continents)) {
+                    continue;
+                }
                 for (var j = first_date; j < row.length; j++) {
                     row[j] = parseInt(row[j])
                 }
@@ -47,7 +138,6 @@
                     margin: { t: 0 } } );
         }
 
-        var data;
 	$.ajax({
 	  type: "GET",  
 	  url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv",
