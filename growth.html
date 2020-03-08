@@ -8,7 +8,9 @@
     <div id="graph" style="width:100%;height:80%;"></div>
     <div id="options_form"></div>
     <p>
-    Data source: <a href="https://github.com/CSSEGISandData/COVID-19">COVID-19 Cases by Johns Hopkins University</a>.<br>
+    Data source: <a href="https://github.com/CSSEGISandData/COVID-19">COVID-19
+        Cases by Johns Hopkins University</a>.<br>
+    Send feedback to tim@casualhacker.net.<br>
     </p>
     <script>
 	var data = {};
@@ -47,7 +49,8 @@
                     }
                 }
             }
-            data['sequences'] = Object.values(sequence_map)
+            data['sequences'] = Object.values(sequence_map).sort(
+                function order(a, b) { return a.id[1].localeCompare(b.id[1]) })
 	}
 
         const continent_table = {
@@ -95,24 +98,41 @@
 	function updateForm() {
 	    var div = document.getElementById("options_form");
 	    var form = document.createElement("form");
-	    for (sequence of data['sequences']) {
-                group = sequence.group
-                name = sequence.name
-		var input = document.createElement('input');
-		input.setAttribute("type", "checkbox");
-		input.setAttribute("id", sequence.id);
-                console.log(group, name)
-		if (name == "US") {
-		    input.setAttribute("checked", true);
-		}
-		input.setAttribute("onClick", "updateGraph()")
-		form.appendChild(input)
+            var grouped = {}
 
-		var label = document.createElement('label');
-		label.setAttribute('for', name)
-		label.innerHTML = name
-		form.appendChild(label)
-	    }
+	    for (sequence of data['sequences']) {
+                if (sequence.group in grouped) {
+                    grouped[sequence.group].push(sequence)
+                } else {
+                    grouped[sequence.group] = [sequence]
+                }
+            }
+
+            table = document.createElement("table")
+            tr = document.createElement("tr")
+            for (group of Object.keys(grouped).sort()) {
+                td = document.createElement("td")
+                for (sequence of grouped[group]) {
+                    name = sequence.name
+                    var input = document.createElement('input');
+                    input.setAttribute("type", "checkbox");
+                    input.setAttribute("id", sequence.id);
+                    console.log(group, name)
+                    if (name == "US") {
+                        input.setAttribute("checked", true);
+                    }
+                    input.setAttribute("onClick", "updateGraph()")
+                    td.appendChild(input)
+
+                    var label = document.createElement('label');
+                    label.setAttribute('for', name)
+                    label.innerHTML = name
+                    td.appendChild(label)
+                }
+                tr.appendChild(td)
+            }
+            table.appendChild(tr)
+            form.appendChild(table)
 	    div.appendChild(form);
 	}
 
