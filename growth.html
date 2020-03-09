@@ -104,6 +104,13 @@
             return "unknown";
         }
 
+        function add_label(element, id, label) {
+            var l = document.createElement('label');
+            l.setAttribute('for', id)
+            l.innerHTML = label
+            element.appendChild(l)
+        }
+
 	function updateForm() {
 	    var div = document.getElementById("options_form");
 	    var form = document.createElement("form");
@@ -126,21 +133,48 @@
                     var input = document.createElement('input');
                     input.setAttribute("type", "checkbox");
                     input.setAttribute("id", sequence.id);
-                    console.log(group, name)
                     if (name == "US") {
                         input.setAttribute("checked", true);
                     }
                     input.setAttribute("onClick", "updateGraph()")
                     td.appendChild(input)
 
-                    var label = document.createElement('label');
-                    label.setAttribute('for', name)
-                    label.innerHTML = name
-                    td.appendChild(label)
+                    add_label(td, name, name)
                 }
                 tr.appendChild(td)
             }
             table.appendChild(tr)
+
+            tr = document.createElement("tr")
+            th = document.createElement("th")
+            th.setAttribute("align", "left")
+            th.innerHTML = "Options"
+            tr.appendChild(th)
+            table.appendChild(tr)
+
+            tr = document.createElement("tr")
+            td = document.createElement("td")
+
+            var input = document.createElement('input');
+            input.setAttribute("type", "radio");
+            input.setAttribute("name", "scale");
+            input.setAttribute("id", "linear_scale");
+            input.setAttribute("checked", true);
+            input.setAttribute("onClick", "updateGraph()")
+            td.appendChild(input)
+            add_label(td, "linear_scale", "Linear Scale")
+
+            var input = document.createElement('input');
+            input.setAttribute("type", "radio");
+            input.setAttribute("name", "scale");
+            input.setAttribute("id", "log_scale");
+            input.setAttribute("onClick", "updateGraph()")
+            td.appendChild(input)
+            add_label(td, "log_scale", "Log Scale")
+
+            tr.appendChild(td)
+            table.appendChild(tr)
+
             form.appendChild(table)
 	    div.appendChild(form);
 	}
@@ -160,12 +194,19 @@
                 traces.push(trace)
             }
 
-            graph = document.getElementById('graph');
-            Plotly.newPlot(graph, traces,
-                {
+            layout = {
                     margin: { t: 0 },
-                    yaxis: { title: 'Confirmed cases' }
-                });
+                    yaxis: {
+                       title: 'Confirmed cases'
+                   }
+                }
+            log_scale = document.getElementById('log_scale')
+            if (log_scale.checked) {
+                layout.yaxis.type = 'log'
+            }
+
+            graph = document.getElementById('graph');
+            Plotly.newPlot(graph, traces, layout);
         }
 
 	$.ajax({
