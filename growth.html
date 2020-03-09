@@ -1,5 +1,6 @@
 <html>
 <head>
+    <link rel="stylesheet" href="growth.css">
     <title>COVID-19 Cases Over Time</title>
     <script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -7,6 +8,7 @@
 </head>
 <body>
     <div id="graph" style="width:100%;height:80%;"></div>
+    <div id="error"></div>
     <div id="options_form"></div>
     <p>
     Data source: <a href="https://github.com/CSSEGISandData/COVID-19">COVID-19
@@ -24,19 +26,44 @@
     <script>
 	var data = {};
 
-	function parseData(csv_data) {
+	function buildData(covid_csv, population_csv) {
+            population_map = {}
+            // Translate from world bank name to Johns Hopkins name
+            translate_population_country = {
+                "United States": "US",
+                "China": "Mainland China",
+                "Korea, Rep.": "South Korea",
+                "Macao SAR, China": "Macau",
+                "Hong Kong SAR, China": "Hong Kong",
+                "United Kingdom": "UK",
+                "Russian Federation": "Russia",
+                "Egypt, Arab Rep.": "Egypt",
+                "Iran, Islamic Rep.": "Iran",
+                "Slovak Republic": "Slovakia",
+                "St. Martin (French part)": "Martinique",
+            }
+            console.log(translate_population_country)
+            for (row of population_csv) {
+                name = row[0]
+                if (name in translate_population_country) {
+                    name = translate_population_country[name]
+                    console.log(row[0], name)
+                }
+                population_map[name] = row[1]
+            }
+
             const province_state = 0;
             const country_region = 1;
             const lat = 2;
             const lng = 3;
             const first_date = 4;
 
-            header = csv_data[0]
+            header = covid_csv[0]
             data['dates'] = header.slice(first_date, header.length);
 
             var sequence_map = {};
-            for (var i = 1; i < csv_data.length; i++) {
-                row = csv_data[i]
+            for (var i = 1; i < covid_csv.length; i++) {
+                row = covid_csv[i]
                 var ids = [["Country", row[country_region]]]
                 if (row[country_region] == "US") {
                     ids.push(["US State", row[province_state].replace(/.*, */, "")])
@@ -55,6 +82,13 @@
                         sequence_map[id].data = row.slice(first_date, row.length)
                         sequence_map[id].group = id[0]
                         sequence_map[id].name = id[1]
+
+                        sequence_map[id].population = population_map[sequence_map[id].name]
+                        if (!sequence_map[id].population) {
+                            console.log("WARNING: Don't know population of",
+                                sequence_map[id].group,
+                                sequence_map[id].name)
+                        }
                     }
                 }
             }
@@ -111,6 +145,19 @@
             element.appendChild(l)
         }
 
+        function add_radio(element, id, name, checked, text) {
+            var input = document.createElement('input');
+            input.setAttribute("type", "radio");
+            input.setAttribute("name", name);
+            input.setAttribute("id", id);
+            if (checked) {
+                input.setAttribute("checked", true);
+            }
+            input.setAttribute("onClick", "updateGraph()")
+            element.appendChild(input)
+            add_label(element, id, text)
+        }
+
 	function updateForm() {
 	    var div = document.getElementById("options_form");
 	    var form = document.createElement("form");
@@ -144,7 +191,9 @@
                 tr.appendChild(td)
             }
             table.appendChild(tr)
+            form.appendChild(table)
 
+            table = document.createElement("table")
             tr = document.createElement("tr")
             th = document.createElement("th")
             th.setAttribute("align", "left")
@@ -153,26 +202,17 @@
             table.appendChild(tr)
 
             tr = document.createElement("tr")
+
             td = document.createElement("td")
-
-            var input = document.createElement('input');
-            input.setAttribute("type", "radio");
-            input.setAttribute("name", "scale");
-            input.setAttribute("id", "linear_scale");
-            input.setAttribute("checked", true);
-            input.setAttribute("onClick", "updateGraph()")
-            td.appendChild(input)
-            add_label(td, "linear_scale", "Linear Scale")
-
-            var input = document.createElement('input');
-            input.setAttribute("type", "radio");
-            input.setAttribute("name", "scale");
-            input.setAttribute("id", "log_scale");
-            input.setAttribute("onClick", "updateGraph()")
-            td.appendChild(input)
-            add_label(td, "log_scale", "Log Scale")
-
+            add_radio(td, "linear_scale", "scale", true, "Linear Scale")
+            add_radio(td, "log_scale", "scale", false, "Log Scale")
             tr.appendChild(td)
+
+            td = document.createElement("td")
+            add_radio(td, "absolute_cases", "cases", true, "Absolute Number of Cases")
+            add_radio(td, "relative_cases", "cases", false, "Relative Number of Cases")
+            tr.appendChild(td)
+
             table.appendChild(tr)
 
             form.appendChild(table)
@@ -180,45 +220,60 @@
 	}
 
         function updateGraph() {
+            error = document.getElementById('error');
+            error.innerHTML = ""
+
             var traces = [];
+            relative_cases = document.getElementById("relative_cases").checked
             for (sequence of data['sequences']) {
 		checkbox = document.getElementById(sequence.id)
 		if (!(checkbox.checked)) {
 		    continue
 		}
+
                 var trace = {
                     x: data['dates'],
-                    y: sequence.data,
                     name: sequence.name
                 };
+                if (relative_cases) {
+                    if (!sequence.population) {
+                        error.innerHTML += "ERROR: Don't know population for " +
+                            sequence.group + " " + sequence.name + ".<br/>"
+                        continue
+                    }
+                    trace.y = sequence.data.map(x => 100000.0 * x / sequence.population)
+                } else {
+                    trace.y = sequence.data
+                }
                 traces.push(trace)
             }
 
             layout = {
                     margin: { t: 0 },
-                    yaxis: {
-                       title: 'Confirmed cases'
-                   }
+                    yaxis: {},
                 }
             log_scale = document.getElementById('log_scale')
             if (log_scale.checked) {
                 layout.yaxis.type = 'log'
+            }
+            if (relative_cases) {
+                layout.yaxis.title = 'Confirmed cases (per 100,000)'
+            } else {
+                layout.yaxis.title = 'Confirmed cases (number)'
             }
 
             graph = document.getElementById('graph');
             Plotly.newPlot(graph, traces, layout);
         }
 
-	$.ajax({
-	  type: "GET",  
-	  url: "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv",
-	  dataType: "text",       
-	  success: function(response)  
-	  {
-	      parseData($.csv.toArrays(response));
-	      updateForm()
-	      updateGraph();
-	  }   
+        $.when(
+            $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"),
+            $.get("population.csv"),
+        ).then(function(covid_response, population_response) {
+            buildData($.csv.toArrays(covid_response[0]),
+                $.csv.toArrays(population_response[0]))
+            updateForm()
+            updateGraph();
 	});
     </script>
 </body>
