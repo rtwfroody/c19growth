@@ -53,12 +53,10 @@
                 "Slovak Republic": "Slovakia",
                 "St. Martin (French part)": "Martinique",
             }
-            console.log(translate_population_country)
             for (row of population_csv) {
                 name = row[0]
                 if (name in translate_population_country) {
                     name = translate_population_country[name]
-                    console.log(row[0], name)
                 }
                 population_map[name] = row[1]
             }
@@ -170,6 +168,11 @@
         }
 
 	function updateForm() {
+            var url = new URL(window.location)
+            if (url.hash == "") {
+                url.hash = ";US"
+            }
+
 	    var div = document.getElementById("options_form");
 	    var form = document.createElement("form");
             var grouped = {}
@@ -191,7 +194,7 @@
                     var input = document.createElement('input');
                     input.setAttribute("type", "checkbox");
                     input.setAttribute("id", sequence.id);
-                    if (name == "US") {
+                    if (url.hash.includes(";" + name)) {
                         input.setAttribute("checked", true);
                     }
                     input.setAttribute("onClick", "updateGraph()")
@@ -215,13 +218,15 @@
             tr = document.createElement("tr")
 
             td = document.createElement("td")
-            add_radio(td, "linear_scale", "scale", true, "Linear Scale")
-            add_radio(td, "log_scale", "scale", false, "Log Scale")
+            log = url.hash.includes(";log")
+            add_radio(td, "linear_scale", "scale", !log, "Linear Scale")
+            add_radio(td, "log_scale", "scale", log, "Log Scale")
             tr.appendChild(td)
 
             td = document.createElement("td")
-            add_radio(td, "absolute_cases", "cases", true, "Absolute Number of Cases")
-            add_radio(td, "relative_cases", "cases", false, "Relative Number of Cases")
+            relative = url.hash.includes(";rel")
+            add_radio(td, "absolute_cases", "cases", !relative, "Absolute Number of Cases")
+            add_radio(td, "relative_cases", "cases", relative, "Relative Number of Cases")
             tr.appendChild(td)
 
             table.appendChild(tr)
@@ -231,8 +236,11 @@
 	}
 
         function updateGraph() {
-            error = document.getElementById('error');
+            var error = document.getElementById('error');
             error.innerHTML = ""
+
+            var url = new URL(window.location)
+            url.hash = ""
 
             var traces = [];
             relative_cases = document.getElementById("relative_cases").checked
@@ -257,6 +265,7 @@
                     trace.y = sequence.data
                 }
                 traces.push(trace)
+                url.hash += ";" + sequence.name
             }
 
             layout = {
@@ -265,13 +274,17 @@
                 }
             log_scale = document.getElementById('log_scale')
             if (log_scale.checked) {
+                url.hash += ";log"
                 layout.yaxis.type = 'log'
             }
             if (relative_cases) {
+                url.hash += ";rel"
                 layout.yaxis.title = 'Confirmed cases (per 100,000)'
             } else {
                 layout.yaxis.title = 'Confirmed cases (number)'
             }
+
+            window.history.pushState("", "", url)
 
             graph = document.getElementById('graph');
             Plotly.newPlot(graph, traces, layout);
