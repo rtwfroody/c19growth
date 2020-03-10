@@ -154,7 +154,7 @@ function add_radio(element, id, name, checked, text) {
 function updateForm() {
     var url = new URL(window.location)
     if (url.hash == "") {
-        url.hash = ";US"
+        url.hash = ";USA"
     }
 
     var div = document.getElementById("options_form");
