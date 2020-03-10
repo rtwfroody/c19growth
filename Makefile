@@ -1,6 +1,7 @@
 PUBLISH=\
 	index.html \
 	growth.css \
+	growth.js \
 	regions.csv \
 	node_modules
 
