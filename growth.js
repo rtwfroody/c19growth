@@ -226,7 +226,8 @@ function updateGraph() {
     var url = new URL(window.location)
     url.hash = ""
 
-    var traces = [];
+    var traces = []
+    var start_offset = Number.MAX_VALUE
     relative_cases = document.getElementById("relative_cases").checked
     for (id in data.sequences) {
         region = data.regions[id]
@@ -248,15 +249,27 @@ function updateGraph() {
         } else {
             trace.y = data.sequences[id]
         }
+        for (var i = 0; i < trace.y.length; i++) {
+            if (trace.y[i] > 0) {
+                start_offset = Math.min(i, start_offset)
+                break;
+            }
+        }
         traces.push(trace)
         url.hash += ";" + id
     }
 
-    layout = {
+    // Make sure we include the last 0 day.
+    start_offset = Math.max(start_offset - 1, 0)
+    for (var trace of traces) {
+        trace.y = trace.y.slice(start_offset, trace.y.length)
+    }
+
+    var layout = {
             margin: { t: 0 },
             yaxis: {},
         }
-    log_scale = document.getElementById('log_scale')
+    var log_scale = document.getElementById('log_scale')
     if (log_scale.checked) {
         url.hash += ";log"
         layout.yaxis.type = 'log'
