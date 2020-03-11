@@ -2,6 +2,24 @@
 
 import csv
 
+def read_csv(f, has_header=True, skip=0):
+    reader = csv.reader(f)
+    for i in range(skip):
+        next(reader)
+    if has_header:
+        header = next(reader)
+    else:
+        header = None
+    data = []
+    for row in reader:
+        if not header:
+            header = range(len(row))
+        entry = {}
+        for i, field in enumerate(header):
+            entry[field] = row[i]
+        data.append(entry)
+    return data
+
 state_abbreviation = {
         "Alabama": "AL",
         "Alaska": "AK",
@@ -56,49 +74,103 @@ state_abbreviation = {
         "Wyoming": "WY",
         }
 
-started = False
-writer = csv.writer(open("regions.csv", "w"))
-writer.writerow(("Group", "Name", "Code", "Population"))
-# From https://data.worldbank.org/indicator/SP.POP.TOTL
-for row in csv.reader(open("data/API_SP.POP.TOTL_DS2_en_csv_v2_821007.csv")):
-    if row and row[0] == "Country Name":
-        started = True
-        continue
-    elif not started:
-        continue
-    country = row[0]
-    code = row[1]
-    while (not row[-1]):
-        row.pop()
-    population = row[-1]
-    try:
-        writer.writerow(["country", country, code, int(population)])
-    except ValueError:
-        # Couldn't convert population to int, so skip that entry.
-        pass
+us_regions = {
+        'Northeast': ('CT', 'ME', 'MA', 'RI', 'VT', 'NJ', 'NY', 'PA', 'DE',
+            'MD', 'DC', 'NH'),
+        'Midwest': ('IA', 'KS', 'MO', 'NE', 'ND', 'SD', 'IL', 'IN', 'MI', 'MN',
+            'OH', 'WI'),
+        'South': ('AL', 'AR', 'FL', 'GA', 'KY', 'LA', 'MD', 'MS', 'NC', 'OK',
+            'SC', 'TN', 'TX', 'VA', 'WV'),
+        'West': ('AK', 'AZ', 'CA', 'CO', 'HI', 'ID', 'MT', 'NV', 'NM', 'OR',
+            'UT', 'WA', 'WY')
+        }
 
-started = False
-import xlrd
-workbook = xlrd.open_workbook("data/nst-est2019-01.xlsx")
-sheet = workbook.sheet_by_index(0)
-for i in range(sheet.nrows):
-    row = sheet.row(i)
-    if row[0].value == '.Alabama':
-        started = True
-    if not started:
-        continue
-    if not row[0].value:
-        break
-    name = row[0].value
-    while name.startswith("."):
-        name = name[1:]
-    code = "US-" + state_abbreviation[name]
-    population = int(row[-1].value)
-    writer.writerow(["us_state", state_abbreviation[name], code, population])
+def region_for_state(abbrev):
+    for region, states in us_regions.items():
+        if abbrev in states:
+            return region
 
-# Some CIA World Fact Book, some Wikipedia
-writer.writerow(["country", "Taiwan", "TW", 23603049])
-writer.writerow(["country", "Saint Barthelemy", "TB", 7122])
-writer.writerow(["country", "St. Martin", "RN", 32556])
-writer.writerow(["country", "Brunei", "BX", 464478])
-writer.writerow(["country", "Palestine", "PSE", 5051953])
+class Regions(object):
+    def __init__(self):
+        self.data = {}
+
+    def add(self, code=None, name=None, group=None, subgroup=None, population=None):
+        entry = self.data.get(code) or {}
+        if not entry.get('code') and code:
+            entry['code'] = code
+        if not entry.get('name') and name:
+            entry['name'] = name
+        if not entry.get('group') and group:
+            entry['group'] = group
+        if not entry.get('subgroup') and subgroup:
+            entry['subgroup'] = subgroup
+        if not entry.get('population') and population:
+            entry['population'] = population
+        self.data[entry['code']] = entry
+
+    def save(self, path):
+        writer = csv.writer(open(path, 'w'))
+        for entry in sorted(self.data.values(), key=lambda v: v['name']):
+            writer.writerow([entry['code'], entry['name'], entry['group'],
+                    entry.get('subgroup', "other"), entry.get('population')])
+
+def main():
+    regions = Regions()
+    for entry in read_csv(open("data/all.csv")):
+        regions.add(
+                code=entry['alpha-3'],
+                group='country',
+                subgroup=entry['region'],
+                name=entry['name'])
+
+    for entry in read_csv(open("data/API_SP.POP.TOTL_DS2_en_csv_v2_821007.csv"), skip=4):
+        for year in range(2020, 2000, -1):
+            if entry.get(str(year)):
+                population = int(entry[str(year)])
+                break
+        else:
+            print("No population info for", entry['Country Name'])
+            continue
+        regions.add(group='country',
+                name=entry['Country Name'],
+                code=entry['Country Code'],
+                population=population)
+
+
+    started = False
+    import xlrd
+    workbook = xlrd.open_workbook("data/nst-est2019-01.xlsx")
+    sheet = workbook.sheet_by_index(0)
+    for i in range(sheet.nrows):
+        row = sheet.row(i)
+        if row[0].value == '.Alabama':
+            started = True
+        if not started:
+            continue
+        if not row[0].value:
+            break
+        name = row[0].value
+        while name.startswith("."):
+            name = name[1:]
+        code = "US-" + state_abbreviation[name]
+        population = int(row[-1].value)
+        regions.add(
+                group="us_state",
+                subgroup=region_for_state(state_abbreviation[name]),
+                name=state_abbreviation[name],
+                code=code,
+                population=population)
+
+    # Some CIA World Fact Book, some Wikipedia
+    regions.add(code="TWN", population=23603049)
+    regions.add(code="BLM", population=7122)
+    #writer.writerow(["country", "Saint Barthelemy", "TB", 7122])
+    #writer.writerow(["country", "St. Martin", "RN", 32556])
+    regions.add(code="BRN", population=464478)
+    #writer.writerow(["country", "Brunei", "BX", 464478])
+    regions.add(code="PSE", population=5051953)
+    #writer.writerow(["country", "Palestine", "PSE", 5051953])
+
+    regions.save("regions.csv")
+
+main()

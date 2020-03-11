@@ -4,30 +4,33 @@ var data = {
 };
 
 function buildData(covid_csv, regions_csv) {
-    // Translate from Johns Hopkins name to world bank name
-    const translate_names = {
-        "US": "United States",
-        "Mainland China": "China",
-        "South Korea": "Korea, Rep.",
-        "Macau": "Macao SAR, China",
-        "Hong Kong": "Hong Kong SAR, China",
-        "UK": "United Kingdom",
-        "Russia": "Russian Federation",
-        "Egypt": "Egypt, Arab Rep.",
-        "Iran": "Iran, Islamic Rep.",
-        "Slovakia": "Slovak Republic",
-        "Martinique": "St. Martin (French part)",
+    // Prepopulate with names Johns Hopkins uses.
+    var name_to_id = {
+        "US": "USA",
+        "Mainland China": "CHN",
+        "South Korea": "KOR",
+        "Taiwan": "TWN",
+        "Macau": "MAC",
+        "Vietnam": "VNM",
+        "UK": "GBR",
+        "Russia": "RUS",
+        "Iran": "IRN",
+        "Czech Republic": "CZE",
+        "Saint Barthelemy": "BLM",
+        "Palestine": "PSE",
+        "Moldova": "MDA",
+        "Brunei": "BRN"
     }
-    var name_to_id = {}
     for (row of regions_csv) {
         var info = {
-            'group': row[0],
+            'group': row[2],
             'name': row[1],
-            'id': row[2],
-            'population': row[3]
+            'id': row[0],
+            'population': row[4],
+            'subgroup': row[3]
         }
-        data.regions[row[2]] = info
-        name_to_id[row[1]] = row[2]
+        data.regions[row[0]] = info
+        name_to_id[row[1]] = row[0]
     }
 
     const province_state = 0;
@@ -49,12 +52,12 @@ function buildData(covid_csv, regions_csv) {
         }
 
         name = row[country_region]
-        if (name in translate_names) {
-            name = translate_names[name]
-        }
         var id
         if (name in name_to_id) {
             id = name_to_id[name]
+            if (id in data.regions) {
+                name = data.regions[id].name
+            }
         } else {
             id = "U" + unknown
             unknown++
@@ -71,6 +74,7 @@ function buildData(covid_csv, regions_csv) {
                     'name': name,
                     'id': id
                 }
+                name_to_id[name] = id
                 console.log("WARNING: Don't have region details (like population) for", name, id)
             }
 
@@ -87,48 +91,6 @@ function buildData(covid_csv, regions_csv) {
         }
     }
     data.sequences = sequence_map
-}
-
-const continent_table = {
-    "Mainland China": "asia",
-    "Indonesia": "asia",
-    "Thailand": "asia",
-    "Japan": "asia",
-    "South Korea": "asia",
-    "Macau": "asia",
-    "Hong Kong": "asia",
-    "Morocco": "africa",
-    "Egypt": "africa",
-    "Portugal": "europe",
-    "Greece": "europe",
-    "Switzerland": "europe",
-    "Sweden": "europe",
-    "Spain": "europe",
-    "Belgium": "europe",
-    "Austria": "europe",
-    "Liechtenstein": "europe",
-    "Andorra": "europe",
-    "Ireland": "europe",
-    "Luxembourg": "europe",
-    "Monaco": "europe",
-    "Norway": "europe",
-    "Denmark": "europe",
-    "Netherlands": "europe",
-    "Iceland": "europe",
-    "New Zealand": "oceania",
-    "Australia": "oceania",
-    "Mexico": "north_america",
-    "US": "north_america",
-    "Canada": "north_america",
-    "Argentina": "south_america",
-    "Brazil": "south_america",
-};
-function get_continent(country) {
-    if (country in continent_table) {
-        return continent_table[country];
-    }
-    console.log("WARNING: Don't know continent for", country)
-    return "unknown";
 }
 
 function add_label(element, id, label) {
@@ -151,7 +113,35 @@ function add_radio(element, id, name, checked, text) {
     add_label(element, id, text)
 }
 
-function updateForm() {
+function add_button(element, id, text, onClick) {
+    var input = document.createElement('input')
+    input.setAttribute("id", id)
+    input.setAttribute("type", "button");
+    input.setAttribute("onClick", onClick)
+    // TODO: What's the difference between this and setAttribute?
+    input.value = text
+    element.appendChild(input)
+}
+
+function updateSelection(group, subgroup, value)
+{
+    var grouped = {}
+
+    for (var id in data.sequences) {
+        region = data.regions[id]
+        if (group != region.group) {
+            continue
+        }
+        if (subgroup == "all" || subgroup == region.subgroup) {
+            var button = document.getElementById(region.id);
+            button.checked = value
+        }
+    }
+    updateGraph()
+}
+
+function updateForm()
+{
     var url = new URL(window.location)
     if (url.hash == "") {
         url.hash = ";USA"
@@ -161,7 +151,7 @@ function updateForm() {
     var form = document.createElement("form");
     var grouped = {}
 
-    for (id in data.sequences) {
+    for (var id in data.sequences) {
         region = data.regions[id]
         if (!(region.group in grouped)) {
             grouped[region.group] = {}
@@ -171,8 +161,10 @@ function updateForm() {
 
     table = document.createElement("table")
     tr = document.createElement("tr")
-    for (group of Object.keys(grouped).sort()) {
+    for (var group of Object.keys(grouped).sort()) {
         td = document.createElement("td")
+        var p = document.createElement("p")
+        var subgroups = {}
         for (name of Object.keys(grouped[group]).sort()) {
             region = grouped[group][name]
             var input = document.createElement('input');
@@ -182,10 +174,26 @@ function updateForm() {
                 input.setAttribute("checked", true);
             }
             input.setAttribute("onClick", "updateGraph()")
-            td.appendChild(input)
+            p.appendChild(input)
 
-            add_label(td, region.id, region.name)
+            add_label(p, region.id, region.name)
+            subgroups[region.subgroup] = 1
         }
+
+        td.appendChild(p)
+
+        p = document.createElement("p")
+        p.innerHTML = "Select "
+        add_button(p, "select_all_" + group, "All", 'updateSelection("' + group + '", "all", 1)')
+        for (subgroup of Object.keys(subgroups).sort()) {
+            add_button(p, "select_" + subgroup + "_" + group, subgroup,
+                'updateSelection("' + group + '", "' + subgroup + '", 1)')
+        }
+        td.appendChild(p)
+        p = document.createElement("p")
+        add_button(p, "clear_all_" + group, "Clear All", 'updateSelection("' + group + '", "all", 0)')
+        td.appendChild(p)
+
         tr.appendChild(td)
     }
     table.appendChild(tr)
