@@ -9,8 +9,10 @@ function buildData(covid_csv, regions_csv) {
         "US": "USA",
         "Mainland China": "CHN",
         "South Korea": "KOR",
+        "Republic of Korea": "KOR",
         "Taiwan": "TWN",
         "Macau": "MAC",
+        "Macao SAR": "MAC",
         "Vietnam": "VNM",
         "UK": "GBR",
         "Russia": "RUS",
@@ -18,8 +20,11 @@ function buildData(covid_csv, regions_csv) {
         "Czech Republic": "CZE",
         "Saint Barthelemy": "BLM",
         "Palestine": "PSE",
+        "occupied Palestinian territory": "PSE",
         "Moldova": "MDA",
-        "Brunei": "BRN"
+        "Republic of Moldova": "MDA",
+        "Brunei": "BRN",
+        "Hong Kong SAR": "HKG",
     }
     for (row of regions_csv) {
         var info = {
