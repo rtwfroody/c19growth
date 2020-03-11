@@ -26,6 +26,59 @@ function buildData(covid_csv, regions_csv) {
         "Brunei": "BRN",
         "Hong Kong SAR": "HKG",
     }
+    var state_abbreviation = {
+        "Alabama": "AL",
+        "Alaska": "AK",
+        "Arizona": "AZ",
+        "Arkansas": "AR",
+        "California": "CA",
+        "Colorado": "CO",
+        "Connecticut": "CT",
+        "Delaware": "DE",
+        "District of Columbia": "DC",
+        "Florida": "FL",
+        "Georgia": "GA",
+        "Hawaii": "HI",
+        "Idaho": "ID",
+        "Illinois": "IL",
+        "Indiana": "IN",
+        "Iowa": "IA",
+        "Kansas": "KS",
+        "Kentucky": "KY",
+        "Louisiana": "LA",
+        "Maine": "ME",
+        "Maryland": "MD",
+        "Massachusetts": "MA",
+        "Michigan": "MI",
+        "Minnesota": "MN",
+        "Mississippi": "MS",
+        "Missouri": "MO",
+        "Montana": "MT",
+        "Nebraska": "NE",
+        "Nevada": "NV",
+        "New Hampshire": "NH",
+        "New Jersey": "NJ",
+        "New Mexico": "NM",
+        "New York": "NY",
+        "North Carolina": "NC",
+        "North Dakota": "ND",
+        "Ohio": "OH",
+        "Oklahoma": "OK",
+        "Oregon": "OR",
+        "Pennsylvania": "PA",
+        "Rhode Island": "RI",
+        "South Carolina": "SC",
+        "South Dakota": "SD",
+        "Tennessee": "TN",
+        "Texas": "TX",
+        "Utah": "UT",
+        "Vermont": "VT",
+        "Virginia": "VA",
+        "Washington": "WA",
+        "West Virginia": "WV",
+        "Wisconsin": "WI",
+        "Wyoming": "WY",
+    }
     for (row of regions_csv) {
         var info = {
             'group': row[2],
@@ -69,8 +122,14 @@ function buildData(covid_csv, regions_csv) {
         }
         var ids = [id]
 
-        if (row[country_region] == "US" && row[province_state].match(/, *[A-Z][A-Z]/)) {
-            ids.push("US-" + row[province_state].replace(/.*, */, "").slice(0, 2))
+        if (row[country_region] == "US") {
+            // The data contains both county data and state aggregate data.  We
+            // aggregate them separately, then clean it up below.
+            if (row[province_state] in state_abbreviation) {
+                ids.push("US-agg-" + state_abbreviation[row[province_state]])
+            } else if (row[province_state].match(/, *[A-Z][A-Z]/)) {
+                ids.push("US-" + row[province_state].replace(/.*, */, "").slice(0, 2))
+            }
         }
         for (id of ids) {
             if (!(id in data.regions)) {
@@ -95,6 +154,32 @@ function buildData(covid_csv, regions_csv) {
             }
         }
     }
+    // Process state data, and use that to compute new US data.
+    var us_sequence = []
+    for (var state of Object.values(state_abbreviation)) {
+        state_id = "US-" + state
+        agg_id = "US-agg-" + state
+        if (agg_id in sequence_map) {
+            if (state_id in sequence_map) {
+                for (var i = 0; i < data.dates.length; i++) {
+                    sequence_map[state_id][i] =
+                        Math.max(sequence_map[state_id][i], sequence_map[agg_id][i])
+                }
+            } else {
+                sequence_map[state_id] = sequence_map[agg_id]
+            }
+            delete sequence_map["US-agg-" + state]
+        }
+        if (state_id in sequence_map) {
+            for (var i = 0; i < data.dates.length; i++) {
+                if (!us_sequence[i]) {
+                    us_sequence[i] = 0
+                }
+                us_sequence[i] += sequence_map[state_id][i]
+            }
+        }
+    }
+    sequence_map['USA'] = us_sequence
     data.sequences = sequence_map
 }
 
