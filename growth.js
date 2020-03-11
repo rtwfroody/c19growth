@@ -1,31 +1,13 @@
 var data = {
     'regions': {},
-    'sequences': {}
 };
 
-function buildData(covid_csv, regions_csv) {
-    // Prepopulate with names Johns Hopkins uses.
-    var name_to_id = {
-        "US": "USA",
-        "Mainland China": "CHN",
-        "South Korea": "KOR",
-        "Republic of Korea": "KOR",
-        "Taiwan": "TWN",
-        "Macau": "MAC",
-        "Macao SAR": "MAC",
-        "Vietnam": "VNM",
-        "UK": "GBR",
-        "Russia": "RUS",
-        "Iran": "IRN",
-        "Czech Republic": "CZE",
-        "Saint Barthelemy": "BLM",
-        "Palestine": "PSE",
-        "occupied Palestinian territory": "PSE",
-        "Moldova": "MDA",
-        "Republic of Moldova": "MDA",
-        "Brunei": "BRN",
-        "Hong Kong SAR": "HKG",
-    }
+function buildSequence(csv, name_to_id)
+{
+    const province_state = 0;
+    const country_region = 1;
+    const first_date = 4;
+
     var state_abbreviation = {
         "Alabama": "AL",
         "Alaska": "AK",
@@ -79,29 +61,16 @@ function buildData(covid_csv, regions_csv) {
         "Wisconsin": "WI",
         "Wyoming": "WY",
     }
-    for (row of regions_csv) {
-        var info = {
-            'group': row[2],
-            'name': row[1],
-            'id': row[0],
-            'population': row[4],
-            'subgroup': row[3]
-        }
-        data.regions[row[0]] = info
-        name_to_id[row[1]] = row[0]
+
+    var header = csv[0]
+    if (!('dates' in data)) {
+        data['dates'] = header.slice(first_date, header.length);
     }
-
-    const province_state = 0;
-    const country_region = 1;
-    const first_date = 4;
-
-    var header = covid_csv[0]
-    data['dates'] = header.slice(first_date, header.length);
 
     var sequence_map = {}
     var unknown = 0
-    for (var i = 1; i < covid_csv.length; i++) {
-        row = covid_csv[i]
+    for (var i = 1; i < csv.length; i++) {
+        row = csv[i]
 
         if (row[province_state].startsWith("Unassigned Location")) {
             console.log("WARNING: Skipping", row[country_region], row[province_state])
@@ -180,7 +149,48 @@ function buildData(covid_csv, regions_csv) {
         }
     }
     sequence_map['USA'] = us_sequence
-    data.sequences = sequence_map
+    return sequence_map
+}
+
+function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
+{
+    // Prepopulate with names Johns Hopkins uses.
+    var name_to_id = {
+        "US": "USA",
+        "Mainland China": "CHN",
+        "South Korea": "KOR",
+        "Republic of Korea": "KOR",
+        "Taiwan": "TWN",
+        "Macau": "MAC",
+        "Macao SAR": "MAC",
+        "Vietnam": "VNM",
+        "UK": "GBR",
+        "Russia": "RUS",
+        "Iran": "IRN",
+        "Czech Republic": "CZE",
+        "Saint Barthelemy": "BLM",
+        "Palestine": "PSE",
+        "occupied Palestinian territory": "PSE",
+        "Moldova": "MDA",
+        "Republic of Moldova": "MDA",
+        "Brunei": "BRN",
+        "Hong Kong SAR": "HKG",
+    }
+    for (row of regions_csv) {
+        var info = {
+            'group': row[2],
+            'name': row[1],
+            'id': row[0],
+            'population': row[4],
+            'subgroup': row[3]
+        }
+        data.regions[row[0]] = info
+        name_to_id[row[1]] = row[0]
+    }
+
+    data.confirmed = buildSequence(confirmed_csv, name_to_id)
+    data.deaths = buildSequence(deaths_csv, name_to_id)
+    data.recovered = buildSequence(recovered_csv, name_to_id)
 }
 
 function add_label(element, id, label) {
@@ -217,7 +227,7 @@ function updateSelection(group, subgroup, value)
 {
     var grouped = {}
 
-    for (var id in data.sequences) {
+    for (var id in data.confirmed) {
         region = data.regions[id]
         if (group != region.group) {
             continue
@@ -241,7 +251,7 @@ function updateForm()
     var form = document.createElement("form");
     var grouped = {}
 
-    for (var id in data.sequences) {
+    for (var id in data.confirmed) {
         region = data.regions[id]
         if (!(region.group in grouped)) {
             grouped[region.group] = {}
@@ -249,7 +259,7 @@ function updateForm()
         grouped[region.group][region.name] = region
     }
 
-    table = document.createElement("table")
+    var table = document.createElement("table")
     tr = document.createElement("tr")
     for (var group of Object.keys(grouped).sort()) {
         td = document.createElement("td")
@@ -311,23 +321,49 @@ function updateForm()
     add_radio(td, "relative_cases", "cases", relative, "Relative Number of Cases")
     tr.appendChild(td)
 
+    td = document.createElement("td")
+    add_radio(td, "confirmed", "stat",
+        !(url.hash.includes(";dth") || url.hash.includes(";rec")), "Confirmed")
+    add_radio(td, "deaths", "stat", url.hash.includes(";dth"), "Deaths")
+    add_radio(td, "recovered", "stat", url.hash.includes(";rec"), "Recovered")
+    tr.appendChild(td)
+
     table.appendChild(tr)
 
     form.appendChild(table)
     div.appendChild(form);
 }
 
-function updateGraph() {
+function updateGraph()
+{
     var error = document.getElementById('error');
     error.innerHTML = ""
 
     var url = new URL(window.location)
     url.hash = ""
 
+    var layout = {
+            margin: { t: 0 },
+            yaxis: {},
+        }
+
+    if (document.getElementById('deaths').checked) {
+        url.hash += ";dth"
+        cases = "deaths"
+        layout.yaxis.title = 'Deaths'
+    } else if (document.getElementById('recovered').checked) {
+        url.hash += ";rec"
+        cases = "recovered"
+        layout.yaxis.title = 'Recovered'
+    } else {
+        cases = "confirmed"
+        layout.yaxis.title = 'Confirmed cases'
+    }
+
     var traces = []
     var start_offset = Number.MAX_VALUE
     relative_cases = document.getElementById("relative_cases").checked
-    for (id in data.sequences) {
+    for (id in data[cases]) {
         region = data.regions[id]
         checkbox = document.getElementById(id)
         if (!checkbox || !(checkbox.checked)) {
@@ -343,9 +379,9 @@ function updateGraph() {
                 error.innerHTML += "ERROR: Don't know population for " + region.name + ".<br/>"
                 continue
             }
-            trace.y = data.sequences[id].map(x => 100000.0 * x / region.population)
+            trace.y = data[cases][id].map(x => 100000.0 * x / region.population)
         } else {
-            trace.y = data.sequences[id]
+            trace.y = data[cases][id]
         }
         for (var i = 0; i < trace.y.length; i++) {
             if (trace.y[i] > 0) {
@@ -363,10 +399,6 @@ function updateGraph() {
         trace.y = trace.y.slice(start_offset, trace.y.length)
     }
 
-    var layout = {
-            margin: { t: 0 },
-            yaxis: {},
-        }
     var log_scale = document.getElementById('log_scale')
     if (log_scale.checked) {
         url.hash += ";log"
@@ -374,9 +406,9 @@ function updateGraph() {
     }
     if (relative_cases) {
         url.hash += ";rel"
-        layout.yaxis.title = 'Confirmed cases (per 100,000)'
+        layout.yaxis.title += ' (per 100,000)'
     } else {
-        layout.yaxis.title = 'Confirmed cases (number)'
+        layout.yaxis.title += ' (number)'
     }
 
     window.history.pushState("", "", url)
@@ -387,10 +419,16 @@ function updateGraph() {
 
 $.when(
     $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"),
+    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"),
+    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"),
     $.get("regions.csv"),
-).then(function(covid_response, regions_response) {
-    buildData($.csv.toArrays(covid_response[0]),
-        $.csv.toArrays(regions_response[0]))
+).then(function(confirmed_response, deaths_response, recovered_response, regions_response) {
+    buildData(
+        $.csv.toArrays(confirmed_response[0]),
+        $.csv.toArrays(deaths_response[0]),
+        $.csv.toArrays(recovered_response[0]),
+        $.csv.toArrays(regions_response[0])
+    )
     updateForm()
     updateGraph();
 });
