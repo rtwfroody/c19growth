@@ -101,7 +101,7 @@ function buildSequence(csv, name_to_id)
             }
         }
         for (id of ids) {
-            if (!(id in data.regions)) {
+            if (!(id in data.regions) && !id.startsWith("US-agg-")) {
                 data.regions[id] = {
                     'group': "country",
                     'name': name,
@@ -159,11 +159,15 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "US": "USA",
         "Mainland China": "CHN",
         "South Korea": "KOR",
+        "Korea, South": "KOR",
         "Republic of Korea": "KOR",
         "Taiwan": "TWN",
+        "Taiwan*": "TWN",
+        "Taipei and environs": "TWN",
         "Macau": "MAC",
         "Macao SAR": "MAC",
         "Vietnam": "VNM",
+        "United Kingdom": "GBR",
         "UK": "GBR",
         "Russia": "RUS",
         "Iran": "IRN",
@@ -175,6 +179,10 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Republic of Moldova": "MDA",
         "Brunei": "BRN",
         "Hong Kong SAR": "HKG",
+        "Bolivia": "BOL",
+        "Cote d'Ivoire": "CIV",
+        "Reunion": "REU",
+        "Congo (Kinshasa)": "COD",
     }
     for (row of regions_csv) {
         var info = {
