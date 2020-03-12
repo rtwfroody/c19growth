@@ -371,7 +371,7 @@ function updateGraph()
     var traces = []
     var start_offset = Number.MAX_VALUE
     relative_cases = document.getElementById("relative_cases").checked
-    for (id in data[cases]) {
+    for (id of Object.keys(data[cases]).sort()) {
         region = data.regions[id]
         checkbox = document.getElementById(id)
         if (!checkbox || !(checkbox.checked)) {
