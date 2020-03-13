@@ -275,6 +275,8 @@ function updateForm()
         var p = document.createElement("p")
         var subgroups = {}
         for (name of Object.keys(grouped[group]).sort()) {
+            var check_div = document.createElement("div")
+            check_div.setAttribute("class", "regbox")
             region = grouped[group][name]
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
@@ -283,10 +285,11 @@ function updateForm()
                 input.setAttribute("checked", true);
             }
             input.setAttribute("onClick", "updateGraph()")
-            p.appendChild(input)
+            check_div.appendChild(input)
 
-            add_label(p, region.id, region.name)
+            add_label(check_div, region.id, region.name)
             subgroups[region.subgroup] = 1
+            p.appendChild(check_div)
         }
 
         td.appendChild(p)

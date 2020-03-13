@@ -11,5 +11,8 @@ all:	regions.csv
 publish:	all
 	rsync --progress -az $(PUBLISH) relax.casualhacker.net:/home/tnewsome/www-hugo/content/covid19/ && ssh relax.casualhacker.net make -C www-hugo
 
+c19:	all
+	rsync --progress -az $(PUBLISH) relax.casualhacker.net:/home/tnewsome/www-hugo/content/c19/ && ssh relax.casualhacker.net make -C www-hugo
+
 regions.csv:	data/*
 	python3 simplify_population.py
