@@ -272,7 +272,10 @@ function updateForm()
     tr = document.createElement("tr")
     for (var group of Object.keys(grouped).sort()) {
         td = document.createElement("td")
-        var p = document.createElement("p")
+        var fieldset = document.createElement("fieldset")
+        var legend = document.createElement("legend")
+        legend.innerHTML = group
+        fieldset.appendChild(legend)
         var subgroups = {}
         for (name of Object.keys(grouped[group]).sort()) {
             var check_div = document.createElement("div")
@@ -289,10 +292,8 @@ function updateForm()
 
             add_label(check_div, region.id, region.name)
             subgroups[region.subgroup] = 1
-            p.appendChild(check_div)
+            fieldset.appendChild(check_div)
         }
-
-        td.appendChild(p)
 
         p = document.createElement("p")
         p.innerHTML = "Select "
@@ -301,6 +302,9 @@ function updateForm()
             add_button(p, "select_" + subgroup + "_" + group, subgroup,
                 'updateSelection("' + group + '", "' + subgroup + '", 1)')
         }
+
+        td.appendChild(fieldset)
+
         td.appendChild(p)
         p = document.createElement("p")
         add_button(p, "clear_all_" + group, "Clear All", 'updateSelection("' + group + '", "all", 0)')
@@ -345,6 +349,9 @@ function updateForm()
 
     form.appendChild(table)
     div.appendChild(form);
+
+    $( 'input[type="checkbox"]' ).checkboxradio({icon: false});
+    $( 'input[type="radio"]' ).checkboxradio({});
 }
 
 function updateGraph()
