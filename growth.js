@@ -397,7 +397,8 @@ function updateGraph()
             trace.y = data[cases][id].map(x => 100000.0 * x / region.population)
         } else if (cases_per_bed) {
             if (!region.hospital_beds) {
-                error.innerHTML += "ERROR: Don't know number of hospital beds for " + region.name + ".<br/>"
+                error.innerHTML += "ERROR: Don't know number of hospital beds for " +
+                    region.name + ".<br/>"
                 continue
             }
             trace.y = data[cases][id].map(x => x / region.hospital_beds)
@@ -418,6 +419,7 @@ function updateGraph()
     start_offset = Math.max(start_offset - 1, 0)
     for (var trace of traces) {
         trace.y = trace.y.slice(start_offset, trace.y.length)
+        trace.x = trace.x.slice(start_offset, trace.x.length)
     }
 
     var log_scale = document.getElementById('log_scale')
