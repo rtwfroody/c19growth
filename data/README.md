@@ -9,3 +9,6 @@ nst-est2019-01.xlsx
 
 From https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv:
 all.csv
+
+From https://data.worldbank.org/indicator/SH.MED.BEDS.ZS:
+API_SH.MED.BEDS.ZS_DS2_en_csv_v2_821439.csv

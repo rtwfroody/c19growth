@@ -186,11 +186,12 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
     }
     for (row of regions_csv) {
         var info = {
-            'group': row[2],
-            'name': row[1],
             'id': row[0],
+            'name': row[1],
+            'group': row[2],
+            'subgroup': row[3],
             'population': row[4],
-            'subgroup': row[3]
+            'hospital_beds': row[5]
         }
         data.regions[row[0]] = info
         name_to_id[row[1]] = row[0]
@@ -324,9 +325,10 @@ function updateForm()
     tr.appendChild(td)
 
     td = document.createElement("td")
-    relative = url.hash.includes(";rel")
-    add_radio(td, "absolute_cases", "cases", !relative, "Absolute Number of Cases")
-    add_radio(td, "relative_cases", "cases", relative, "Relative Number of Cases")
+    add_radio(td, "absolute_cases", "cases",
+        !(url.hash.includes(";rel") || url.hash.includes(";bed")), "Absolute Number of Cases")
+    add_radio(td, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per 100,000")
+    add_radio(td, "cases_per_bed", "cases", url.hash.includes(";bed"), "Cases per Hospital Bed")
     tr.appendChild(td)
 
     td = document.createElement("td")
@@ -370,7 +372,9 @@ function updateGraph()
 
     var traces = []
     var start_offset = Number.MAX_VALUE
+    absolute_cases = document.getElementById("absolute_cases").checked
     relative_cases = document.getElementById("relative_cases").checked
+    cases_per_bed = document.getElementById("cases_per_bed").checked
     for (id of Object.keys(data[cases]).sort()) {
         region = data.regions[id]
         checkbox = document.getElementById(id)
@@ -388,6 +392,12 @@ function updateGraph()
                 continue
             }
             trace.y = data[cases][id].map(x => 100000.0 * x / region.population)
+        } else if (cases_per_bed) {
+            if (!region.hospital_beds) {
+                error.innerHTML += "ERROR: Don't know number of hospital beds for " + region.name + ".<br/>"
+                continue
+            }
+            trace.y = data[cases][id].map(x => x / region.hospital_beds)
         } else {
             trace.y = data[cases][id]
         }
@@ -415,6 +425,9 @@ function updateGraph()
     if (relative_cases) {
         url.hash += ";rel"
         layout.yaxis.title += ' (per 100,000)'
+    } else if (cases_per_bed) {
+        url.hash += ";bed"
+        layout.yaxis.title += ' (per hospital bed)'
     } else {
         layout.yaxis.title += ' (number)'
     }

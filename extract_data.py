@@ -94,7 +94,8 @@ class Regions(object):
     def __init__(self):
         self.data = {}
 
-    def add(self, code=None, name=None, group=None, subgroup=None, population=None):
+    def add(self, code=None, name=None, group=None, subgroup=None, population=None,
+            hospital_beds=None):
         entry = self.data.get(code) or {}
         if not entry.get('code') and code:
             entry['code'] = code
@@ -106,13 +107,20 @@ class Regions(object):
             entry['subgroup'] = subgroup
         if not entry.get('population') and population:
             entry['population'] = population
+        if not entry.get('hospital_beds') and hospital_beds:
+            entry['hospital_beds'] = hospital_beds
         self.data[entry['code']] = entry
 
     def save(self, path):
         writer = csv.writer(open(path, 'w'))
         for entry in sorted(self.data.values(), key=lambda v: v['name']):
+            total_beds = None
+            if isinstance(entry.get('hospital_beds'), float) and \
+                    isinstance(entry.get('population'), int):
+                total_beds = round(entry.get('hospital_beds') * entry.get('population') / 1000)
             writer.writerow([entry['code'], entry['name'], entry['group'],
-                    entry.get('subgroup', "other"), entry.get('population')])
+                    entry.get('subgroup', "other"), entry.get('population'),
+                    total_beds])
 
 def main():
     regions = Regions()
@@ -136,6 +144,18 @@ def main():
                 code=entry['Country Code'],
                 population=population)
 
+    for entry in read_csv(open("data/API_SH.MED.BEDS.ZS_DS2_en_csv_v2_821439.csv"), skip=4):
+        for year in range(2020, 2000, -1):
+            if entry.get(str(year)):
+                beds = float(entry[str(year)])
+                break
+        else:
+            print("No hospital bed info for", entry['Country Name'])
+            continue
+        regions.add(group='country',
+                name=entry['Country Name'],
+                code=entry['Country Code'],
+                hospital_beds=beds)
 
     started = False
     import xlrd
