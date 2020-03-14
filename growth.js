@@ -232,6 +232,15 @@ function add_button(element, id, text, onClick) {
     element.appendChild(input)
 }
 
+function add_fieldset(element, legend) {
+    var fieldset = document.createElement("fieldset")
+    var l = document.createElement("legend")
+    l.innerHTML = legend
+    fieldset.appendChild(l)
+    element.appendChild(fieldset)
+    return fieldset
+}
+
 function updateSelection(group, subgroup, value)
 {
     var grouped = {}
@@ -321,39 +330,22 @@ function updateForm()
         tab_div.appendChild(subgroups[subgroup])
     }
 
-    var table = document.createElement("table")
-    tr = document.createElement("tr")
-    th = document.createElement("th")
-    th.setAttribute("align", "left")
-    th.innerHTML = "Options"
-    tr.appendChild(th)
-    table.appendChild(tr)
-
-    tr = document.createElement("tr")
-
-    td = document.createElement("td")
+    var fieldset = add_fieldset(div, "Scale")
     log = url.hash.includes(";log")
-    add_radio(td, "linear_scale", "scale", !log, "Linear Scale")
-    add_radio(td, "log_scale", "scale", log, "Log Scale")
-    tr.appendChild(td)
+    add_radio(fieldset, "linear_scale", "scale", !log, "Linear Scale")
+    add_radio(fieldset, "log_scale", "scale", log, "Log Scale")
 
-    td = document.createElement("td")
-    add_radio(td, "absolute_cases", "cases",
-        !(url.hash.includes(";rel") || url.hash.includes(";bed")), "Absolute Number of Cases")
-    add_radio(td, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per 100,000")
-    add_radio(td, "cases_per_bed", "cases", url.hash.includes(";bed"), "Cases per Hospital Bed")
-    tr.appendChild(td)
-
-    td = document.createElement("td")
-    add_radio(td, "confirmed", "stat",
+    var fieldset = add_fieldset(div, "Type")
+    add_radio(fieldset, "confirmed", "stat",
         !(url.hash.includes(";dth") || url.hash.includes(";rec")), "Confirmed")
-    add_radio(td, "deaths", "stat", url.hash.includes(";dth"), "Deaths")
-    add_radio(td, "recovered", "stat", url.hash.includes(";rec"), "Recovered")
-    tr.appendChild(td)
+    add_radio(fieldset, "deaths", "stat", url.hash.includes(";dth"), "Deaths")
+    add_radio(fieldset, "recovered", "stat", url.hash.includes(";rec"), "Recovered")
 
-    table.appendChild(tr)
-
-    div.appendChild(table)
+    var fieldset = add_fieldset(div, "Relative")
+    add_radio(fieldset, "absolute_cases", "cases",
+        !(url.hash.includes(";rel") || url.hash.includes(";bed")), "Absolute Number of Cases")
+    add_radio(fieldset, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per 100,000")
+    add_radio(fieldset, "cases_per_bed", "cases", url.hash.includes(";bed"), "Cases per Hospital Bed")
 
     $( 'input[type="checkbox"]' ).checkboxradio({icon: false});
     $( 'input[type="radio"]' ).checkboxradio({});
