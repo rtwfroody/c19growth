@@ -339,14 +339,14 @@ function updateForm()
     add_radio(fieldset, "active", "stat", url.hash.includes(";act"), "Active")
     add_radio(fieldset, "confirmed", "stat",
         !(url.hash.includes(";dth") || url.hash.includes(";rec") || url.hash.includes(";act")),
-        "Confirmed")
+        "Total")
     add_radio(fieldset, "deaths", "stat", url.hash.includes(";dth"), "Deaths")
     add_radio(fieldset, "recovered", "stat", url.hash.includes(";rec"), "Recovered")
 
     var fieldset = add_fieldset(div, "Relative")
     add_radio(fieldset, "absolute_cases", "cases",
         !(url.hash.includes(";rel") || url.hash.includes(";bed")), "Absolute Number of Cases")
-    add_radio(fieldset, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per 100,000")
+    add_radio(fieldset, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per Capita")
     add_radio(fieldset, "cases_per_bed", "cases", url.hash.includes(";bed"), "Cases per Hospital Bed")
 
     $( 'input[type="checkbox"]' ).checkboxradio({icon: false});
@@ -372,20 +372,20 @@ function updateGraph()
     if (document.getElementById('deaths').checked) {
         url.hash += ";dth"
         cases = "deaths"
-        layout.yaxis.title = 'Deaths'
+        layout.yaxis.title = 'Confirmed Deaths'
     } else if (document.getElementById('recovered').checked) {
         url.hash += ";rec"
         cases = "recovered"
-        layout.yaxis.title = 'Recovered'
+        layout.yaxis.title = 'Confirmed Recovered'
     } else if (document.getElementById('active').checked) {
         url.hash += ";act"
         cases = "confirmed"
         // And then we treat them special in the loop below.
         cases_active = true
-        layout.yaxis.title = 'Active'
+        layout.yaxis.title = 'Confirmed Active'
     } else {
         cases = "confirmed"
-        layout.yaxis.title = 'Confirmed cases'
+        layout.yaxis.title = 'Confirmed Cases'
     }
 
     var traces = []
