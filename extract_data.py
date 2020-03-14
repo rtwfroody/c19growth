@@ -75,13 +75,13 @@ state_abbreviation = {
         }
 
 us_regions = {
-        'Northeast': ('CT', 'ME', 'MA', 'RI', 'VT', 'NJ', 'NY', 'PA', 'DE',
+        'US Northeast': ('CT', 'ME', 'MA', 'RI', 'VT', 'NJ', 'NY', 'PA', 'DE',
             'MD', 'DC', 'NH'),
-        'Midwest': ('IA', 'KS', 'MO', 'NE', 'ND', 'SD', 'IL', 'IN', 'MI', 'MN',
+        'US Midwest': ('IA', 'KS', 'MO', 'NE', 'ND', 'SD', 'IL', 'IN', 'MI', 'MN',
             'OH', 'WI'),
-        'South': ('AL', 'AR', 'FL', 'GA', 'KY', 'LA', 'MD', 'MS', 'NC', 'OK',
+        'US South': ('AL', 'AR', 'FL', 'GA', 'KY', 'LA', 'MD', 'MS', 'NC', 'OK',
             'SC', 'TN', 'TX', 'VA', 'WV'),
-        'West': ('AK', 'AZ', 'CA', 'CO', 'HI', 'ID', 'MT', 'NV', 'NM', 'OR',
+        'US West': ('AK', 'AZ', 'CA', 'CO', 'HI', 'ID', 'MT', 'NV', 'NM', 'OR',
             'UT', 'WA', 'WY')
         }
 

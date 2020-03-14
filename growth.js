@@ -273,25 +273,23 @@ function updateForm()
     tab_div.appendChild(tab_list)
     div.appendChild(tab_div)
     var i = 0
+    var subgroups = {}
     for (var group of Object.keys(grouped).sort()) {
-        i += 1
-        var li = document.createElement("li")
-        var a = document.createElement("a")
-        a.setAttribute("href", "#tabs-" + i)
-        a.innerHTML = group
-        li.appendChild(a)
-        tab_list.appendChild(li)
-
-        var tab = document.createElement("div")
-        tab.setAttribute("id", "tabs-" + i)
-
-        //var fieldset = document.createElement("fieldset")
-        //var legend = document.createElement("legend")
-        //legend.innerHTML = group
-        //fieldset.appendChild(legend)
-        var subgroups = {}
         for (name of Object.keys(grouped[group]).sort()) {
-            region = grouped[group][name]
+            var region = grouped[group][name]
+            if (!(region.subgroup in subgroups)) {
+                i += 1
+
+                subgroups[region.subgroup] = document.createElement("div")
+                subgroups[region.subgroup].setAttribute("id", "tabs-" + i)
+
+                var li = document.createElement("li")
+                var a = document.createElement("a")
+                a.setAttribute("href", "#tabs-" + i)
+                a.innerHTML = region.subgroup
+                li.appendChild(a)
+                tab_list.appendChild(li)
+            }
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
             input.setAttribute("id", region.id);
@@ -299,26 +297,28 @@ function updateForm()
                 input.setAttribute("checked", true);
             }
             input.setAttribute("onClick", "updateGraph()")
-            tab.appendChild(input)
+            subgroups[region.subgroup].appendChild(input)
 
-            add_label(tab, region.id, region.name)
-            subgroups[region.subgroup] = 1
+            add_label(subgroups[region.subgroup], region.id, region.name)
         }
 
-        p = document.createElement("p")
-        p.innerHTML = "Select "
-        add_button(p, "select_all_" + group, "All", 'updateSelection("' + group + '", "all", 1)')
-        for (subgroup of Object.keys(subgroups).sort()) {
-            add_button(p, "select_" + subgroup + "_" + group, subgroup,
-                'updateSelection("' + group + '", "' + subgroup + '", 1)')
-        }
+//        p = document.createElement("p")
+//        p.innerHTML = "Select "
+//        add_button(p, "select_all_" + group, "All", 'updateSelection("' + group + '", "all", 1)')
+//        for (subgroup of Object.keys(subgroups).sort()) {
+//            add_button(p, "select_" + subgroup + "_" + group, subgroup,
+//                'updateSelection("' + group + '", "' + subgroup + '", 1)')
+//        }
+//        tab.appendChild(p)
 
-        tab.appendChild(p)
+//        p = document.createElement("p")
+//        add_button(p, "clear_all_" + group, "Clear All", 'updateSelection("' + group + '", "all", 0)')
+//        tab.appendChild(p)
+//        tab_div.appendChild(tab)
+    }
 
-        p = document.createElement("p")
-        add_button(p, "clear_all_" + group, "Clear All", 'updateSelection("' + group + '", "all", 0)')
-        tab.appendChild(p)
-        tab_div.appendChild(tab)
+    for (subgroup of Object.keys(subgroups).sort()) {
+        tab_div.appendChild(subgroups[subgroup])
     }
 
     var table = document.createElement("table")
