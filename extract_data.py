@@ -177,7 +177,7 @@ def main():
         regions.add(
                 group="us_state",
                 subgroup=region_for_state(state_abbreviation[name]),
-                name=state_abbreviation[name],
+                name=name,
                 code=code,
                 population=population)
 

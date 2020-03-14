@@ -1,8 +1,6 @@
-US-AK,AK,us_state,US West,731545,
-US-AL,AL,us_state,US South,4903185,
-US-AR,AR,us_state,US South,3017804,
-US-AZ,AZ,us_state,US West,7278717,
 AFG,Afghanistan,country,Asia,37172386,18586
+US-AL,Alabama,us_state,US South,4903185,
+US-AK,Alaska,us_state,US West,731545,
 ALB,Albania,country,Europe,2866376,8312
 DZA,Algeria,country,Africa,42228429,80234
 ASM,American Samoa,country,Oceania,55465,
@@ -13,6 +11,8 @@ ATA,Antarctica,country,other,,
 ATG,Antigua and Barbuda,country,Americas,96286,366
 ARB,Arab World,country,other,419790588,681960
 ARG,Argentina,country,Americas,44494502,222473
+US-AZ,Arizona,us_state,US West,7278717,
+US-AR,Arkansas,us_state,US South,3017804,
 ARM,Armenia,country,Asia,2951776,12397
 ABW,Aruba,country,Americas,105845,
 AUS,Australia,country,Oceania,24992369,94971
@@ -39,10 +39,8 @@ BRN,Brunei Darussalam,country,Asia,428962,1158
 BGR,Bulgaria,country,Europe,7024216,47765
 BFA,Burkina Faso,country,Africa,19751535,7901
 BDI,Burundi,country,Africa,11175378,8940
-US-CA,CA,us_state,US West,39512223,
-US-CO,CO,us_state,US West,5758736,
-US-CT,CT,us_state,US Northeast,3565287,
 CPV,Cabo Verde,country,Africa,543767,1142
+US-CA,California,us_state,US West,39512223,
 KHM,Cambodia,country,Asia,16249798,13000
 CMR,Cameroon,country,Africa,25216237,32781
 CAN,Canada,country,Americas,37058856,100059
@@ -57,9 +55,11 @@ CHN,China,country,Asia,1392730000,5849466
 CXR,Christmas Island,country,Oceania,,
 CCK,Cocos (Keeling) Islands,country,Oceania,,
 COL,Colombia,country,Americas,49648685,74473
+US-CO,Colorado,us_state,US West,5758736,
 COM,Comoros,country,Africa,832322,1831
 COG,Congo,country,Africa,5244363,8391
 COD,"Congo, Democratic Republic of the",country,Africa,84068091,67254
+US-CT,Connecticut,us_state,US Northeast,3565287,
 COK,Cook Islands,country,Oceania,,
 CRI,Costa Rica,country,Americas,4999441,5999
 HRV,Croatia,country,Europe,4089400,22901
@@ -68,9 +68,9 @@ CUW,Curaçao,country,Americas,159849,
 CYP,Cyprus,country,Asia,1189265,4044
 CZE,Czechia,country,Europe,10625695,69067
 CIV,Côte d'Ivoire,country,Africa,25069229,10028
-US-DC,DC,us_state,US Northeast,705749,
-US-DE,DE,us_state,US Northeast,973764,
+US-DE,Delaware,us_state,US Northeast,973764,
 DNK,Denmark,country,Europe,5797446,14494
+US-DC,District of Columbia,us_state,US Northeast,705749,
 DJI,Djibouti,country,Africa,958920,1342
 DMA,Dominica,country,Americas,71625,272
 DOM,Dominican Republic,country,Americas,10627165,17003
@@ -91,20 +91,20 @@ ECS,Europe & Central Asia,country,other,918793590,5443780
 TEC,Europe & Central Asia (IDA & IBRD countries),country,other,459865205,2925639
 ECA,Europe & Central Asia (excluding high income),country,other,417797257,2654540
 EUU,European Union,country,other,513213363,2874743
-US-FL,FL,us_state,US South,21477737,
 FLK,Falkland Islands (Malvinas),country,Americas,,
 FRO,Faroe Islands,country,Europe,48497,
 FJI,Fiji,country,Oceania,883483,2032
 FIN,Finland,country,Europe,5518050,24279
+US-FL,Florida,us_state,US South,21477737,
 FCS,Fragile and conflict affected situations,country,other,515215936,503368
 FRA,France,country,Europe,66987244,435417
 GUF,French Guiana,country,Americas,,
 PYF,French Polynesia,country,Oceania,277679,
 ATF,French Southern Territories,country,Africa,,
-US-GA,GA,us_state,US South,10617423,
 GAB,Gabon,country,Africa,2119275,13351
 GMB,Gambia,country,Africa,2280102,2508
 GEO,Georgia,country,Asia,3731000,9701
+US-GA,Georgia,us_state,US South,10617423,
 DEU,Germany,country,Europe,82927922,688302
 GHA,Ghana,country,Africa,29767108,26790
 GIB,Gibraltar,country,Europe,33718,
@@ -118,8 +118,8 @@ GGY,Guernsey,country,Europe,,
 GIN,Guinea,country,Africa,12414318,3724
 GNB,Guinea-Bissau,country,Africa,1874309,1874
 GUY,Guyana,country,Americas,779004,1246
-US-HI,HI,us_state,US West,1415872,
 HTI,Haiti,country,Americas,11123176,7786
+US-HI,Hawaii,us_state,US West,1415872,
 HMD,Heard Island and McDonald Islands,country,Oceania,,
 HPC,Heavily indebted poor countries (HIPC),country,other,780234406,580113
 HIC,High income,country,other,1210312147,4975108
@@ -127,18 +127,18 @@ VAT,Holy See,country,Europe,,
 HND,Honduras,country,Americas,9587522,6711
 HKG,Hong Kong,country,Asia,7451000,
 HUN,Hungary,country,Europe,9768785,68381
-US-IA,IA,us_state,US Midwest,3155070,
 IBD,IBRD only,country,other,4772284113,12422093
-US-ID,ID,us_state,US West,1787065,
 IBT,IDA & IBRD total,country,other,6412522234,15780739
 IDB,IDA blend,country,other,555830605,624023
 IDX,IDA only,country,other,1084407516,
 IDA,IDA total,country,other,1640238121,
-US-IL,IL,us_state,US Midwest,12671821,
-US-IN,IN,us_state,US Midwest,6732219,
 ISL,Iceland,country,Europe,353574,1131
+US-ID,Idaho,us_state,US West,1787065,
+US-IL,Illinois,us_state,US Midwest,12671821,
 IND,India,country,Asia,1352617328,946832
+US-IN,Indiana,us_state,US Midwest,6732219,
 IDN,Indonesia,country,Asia,267663435,321196
+US-IA,Iowa,us_state,US Midwest,3155070,
 IRN,Iran (Islamic Republic of),country,Asia,81800269,122700
 IRQ,Iraq,country,Asia,38433600,53807
 IRL,Ireland,country,Europe,4853506,13590
@@ -149,9 +149,9 @@ JAM,Jamaica,country,Americas,2934855,4989
 JPN,Japan,country,Asia,126529100,1695490
 JEY,Jersey,country,Europe,,
 JOR,Jordan,country,Asia,9956011,13938
-US-KS,KS,us_state,US Midwest,2913314,
-US-KY,KY,us_state,US South,4467673,
+US-KS,Kansas,us_state,US Midwest,2913314,
 KAZ,Kazakhstan,country,Asia,18276499,122453
+US-KY,Kentucky,us_state,US South,4467673,
 KEN,Kenya,country,Africa,51393010,71950
 KIR,Kiribati,country,Oceania,115847,220
 PRK,Korea (Democratic People's Republic of),country,Asia,25549819,337258
@@ -159,7 +159,6 @@ KOR,"Korea, Republic of",country,Asia,51635256,593805
 XKX,Kosovo,country,other,1845300,
 KWT,Kuwait,country,Asia,4137309,8275
 KGZ,Kyrgyzstan,country,Asia,6315800,28421
-US-LA,LA,us_state,US South,4648794,
 LAO,Lao People's Democratic Republic,country,Asia,7061507,10592
 LTE,Late-demographic dividend,country,other,2288665963,9656756
 LCN,Latin America & Caribbean,country,other,641357515,1393848
@@ -173,20 +172,14 @@ LBR,Liberia,country,Africa,4818977,3855
 LBY,Libya,country,Africa,6678567,24711
 LIE,Liechtenstein,country,Europe,37910,
 LTU,Lithuania,country,Europe,2789533,20364
+US-LA,Louisiana,us_state,US South,4648794,
 LMY,Low & middle income,country,other,6383958209,15525825
 LIC,Low income,country,other,705417321,811571
 LMC,Lower middle income,country,other,3022905169,2980958
 LUX,Luxembourg,country,Europe,607728,2917
-US-MA,MA,us_state,US Northeast,6892503,
-US-MD,MD,us_state,US Northeast,6045680,
-US-ME,ME,us_state,US Northeast,1344212,
-US-MI,MI,us_state,US Midwest,9986857,
-US-MN,MN,us_state,US Midwest,5639632,
-US-MO,MO,us_state,US Midwest,6137428,
-US-MS,MS,us_state,US South,2976149,
-US-MT,MT,us_state,US West,1068778,
 MAC,Macao,country,Asia,631636,
 MDG,Madagascar,country,Africa,26262368,5252
+US-ME,Maine,us_state,US Northeast,1344212,
 MWI,Malawi,country,Africa,18143315,23586
 MYS,Malaysia,country,Asia,31528585,59904
 MDV,Maldives,country,Asia,515696,2217
@@ -194,36 +187,41 @@ MLI,Mali,country,Africa,19077690,1908
 MLT,Malta,country,Europe,483530,2273
 MHL,Marshall Islands,country,Oceania,58413,158
 MTQ,Martinique,country,Americas,,
+US-MD,Maryland,us_state,US Northeast,6045680,
+US-MA,Massachusetts,us_state,US Northeast,6892503,
 MRT,Mauritania,country,Africa,4403319,1761
 MUS,Mauritius,country,Africa,1265303,4302
 MYT,Mayotte,country,Africa,,
 MEX,Mexico,country,Americas,126190788,189286
+US-MI,Michigan,us_state,US Midwest,9986857,
 FSM,Micronesia (Federated States of),country,Oceania,112640,360
 MEA,Middle East & North Africa,country,other,448912859,731048
 TMN,Middle East & North Africa (IDA & IBRD countries),country,other,378327628,573808
 MNA,Middle East & North Africa (excluding high income),country,other,382896715,580738
 MIC,Middle income,country,other,5678540888,13632320
+US-MN,Minnesota,us_state,US Midwest,5639632,
+US-MS,Mississippi,us_state,US South,2976149,
+US-MO,Missouri,us_state,US Midwest,6137428,
 MDA,"Moldova, Republic of",country,Europe,3545883,20566
 MCO,Monaco,country,Europe,38682,534
 MNG,Mongolia,country,Asia,3170208,22191
+US-MT,Montana,us_state,US West,1068778,
 MNE,Montenegro,country,Europe,622345,2489
 MSR,Montserrat,country,Americas,,
 MAR,Morocco,country,Africa,36029138,39632
 MOZ,Mozambique,country,Africa,29495962,20647
 MMR,Myanmar,country,Asia,53708395,48338
-US-NC,NC,us_state,US South,10488084,
-US-ND,ND,us_state,US Midwest,762062,
-US-NE,NE,us_state,US Midwest,1934408,
-US-NH,NH,us_state,US Northeast,1359711,
-US-NJ,NJ,us_state,US Northeast,8882190,
-US-NM,NM,us_state,US West,2096829,
-US-NV,NV,us_state,US West,3080156,
-US-NY,NY,us_state,US Northeast,19453561,
 NAM,Namibia,country,Africa,2448255,6610
 NRU,Nauru,country,Oceania,12704,64
+US-NE,Nebraska,us_state,US Midwest,1934408,
 NPL,Nepal,country,Asia,28087871,8426
 NLD,Netherlands,country,Europe,17231017,80986
+US-NV,Nevada,us_state,US West,3080156,
 NCL,New Caledonia,country,Oceania,284060,
+US-NH,New Hampshire,us_state,US Northeast,1359711,
+US-NJ,New Jersey,us_state,US Northeast,8882190,
+US-NM,New Mexico,us_state,US West,2096829,
+US-NY,New York,us_state,US Northeast,19453561,
 NZL,New Zealand,country,Oceania,4885500,13679
 NIC,Nicaragua,country,Americas,6465513,5819
 NER,Niger,country,Africa,22442948,6733
@@ -231,16 +229,17 @@ NGA,Nigeria,country,Africa,195874740,97937
 NIU,Niue,country,Oceania,,
 NFK,Norfolk Island,country,Oceania,,
 NAC,North America,country,other,364290258,1056442
+US-NC,North Carolina,us_state,US South,10488084,
+US-ND,North Dakota,us_state,US Midwest,762062,
 MKD,North Macedonia,country,Europe,2082958,9165
 MNP,Northern Mariana Islands,country,Oceania,56882,
 NOR,Norway,country,Europe,5314336,20726
 OED,OECD members,country,other,1303529456,4972027
-US-OH,OH,us_state,US Midwest,11689100,
-US-OK,OK,us_state,US South,3956971,
-US-OR,OR,us_state,US West,4217737,
+US-OH,Ohio,us_state,US Midwest,11689100,
+US-OK,Oklahoma,us_state,US South,3956971,
 OMN,Oman,country,Asia,4829483,7727
+US-OR,Oregon,us_state,US West,4217737,
 OSS,Other small states,country,other,30758989,
-US-PA,PA,us_state,US Northeast,12801989,
 PSS,Pacific island small states,country,other,2457367,5104
 PAK,Pakistan,country,Asia,212215030,127329
 PLW,Palau,country,Oceania,17907,86
@@ -248,6 +247,7 @@ PSE,"Palestine, State of",country,Asia,4569087,
 PAN,Panama,country,Americas,4176873,9607
 PNG,Papua New Guinea,country,Oceania,8606316,
 PRY,Paraguay,country,Americas,6956071,9043
+US-PA,Pennsylvania,us_state,US Northeast,12801989,
 PER,Peru,country,Americas,31989256,51183
 PHL,Philippines,country,Asia,106651922,106652
 PCN,Pitcairn,country,Oceania,,
@@ -257,13 +257,11 @@ PST,Post-demographic dividend,country,other,1109997273,5113994
 PRE,Pre-demographic dividend,country,other,919485393,
 PRI,Puerto Rico,country,Americas,3195153,
 QAT,Qatar,country,Asia,2781677,3338
-US-RI,RI,us_state,US Northeast,1059361,
+US-RI,Rhode Island,us_state,US Northeast,1059361,
 ROU,Romania,country,Europe,19473936,122686
 RUS,Russian Federation,country,Europe,144478050,1184720
 RWA,Rwanda,country,Africa,12301939,19683
 REU,Réunion,country,Africa,,
-US-SC,SC,us_state,US South,5148714,
-US-SD,SD,us_state,US Midwest,884659,
 BLM,Saint Barthélemy,country,Americas,7122,
 SHN,"Saint Helena, Ascension and Tristan da Cunha",country,Africa,,
 KNA,Saint Kitts and Nevis,country,Americas,52441,121
@@ -289,6 +287,8 @@ SOM,Somalia,country,Africa,15008154,13507
 ZAF,South Africa,country,Africa,57779622,161783
 SAS,South Asia,country,other,1814388744,1223373
 TSA,South Asia (IDA & IBRD),country,other,1814388744,1223373
+US-SC,South Carolina,us_state,US South,5148714,
+US-SD,South Dakota,us_state,US Midwest,884659,
 SGS,South Georgia and the South Sandwich Islands,country,Americas,,
 SSD,South Sudan,country,Africa,10975920,
 ESP,Spain,country,Europe,46723749,140171
@@ -302,11 +302,11 @@ SJM,Svalbard and Jan Mayen,country,Europe,,
 SWE,Sweden,country,Europe,10183175,26476
 CHE,Switzerland,country,Europe,8516543,40028
 SYR,Syrian Arab Republic,country,Asia,16906283,25359
-US-TN,TN,us_state,US South,6829174,
-US-TX,TX,us_state,US South,28995881,
 TWN,"Taiwan, Province of China",country,Asia,23603049,
 TJK,Tajikistan,country,Asia,9100837,43684
 TZA,"Tanzania, United Republic of",country,Africa,56318348,39423
+US-TN,Tennessee,us_state,US South,6829174,
+US-TX,Texas,us_state,US South,28995881,
 THA,Thailand,country,Asia,69428524,145800
 TLS,Timor-Leste,country,Asia,1267972,7481
 TGO,Togo,country,Africa,7889094,5522
@@ -318,7 +318,6 @@ TUR,Turkey,country,Asia,82319724,222263
 TKM,Turkmenistan,country,Asia,5850908,43297
 TCA,Turks and Caicos Islands,country,Americas,37665,
 TUV,Tuvalu,country,Oceania,11508,64
-US-UT,UT,us_state,US West,3205958,
 UGA,Uganda,country,Africa,42723139,21362
 UKR,Ukraine,country,Europe,44622516,392678
 ARE,United Arab Emirates,country,Asia,9630959,11557
@@ -327,21 +326,22 @@ UMI,United States Minor Outlying Islands,country,Oceania,,
 USA,United States of America,country,Americas,327167434,948786
 UMC,Upper middle income,country,other,2655635719,10223261
 URY,Uruguay,country,Americas,3449299,9658
+US-UT,Utah,us_state,US West,3205958,
 UZB,Uzbekistan,country,Asia,32955400,131822
-US-VA,VA,us_state,US South,8535519,
-US-VT,VT,us_state,US Northeast,623989,
 VUT,Vanuatu,country,Oceania,292680,498
 VEN,Venezuela (Bolivarian Republic of),country,Americas,28870195,23096
+US-VT,Vermont,us_state,US Northeast,623989,
 VNM,Viet Nam,country,Asia,95540395,248405
 VGB,Virgin Islands (British),country,Americas,29802,
 VIR,Virgin Islands (U.S.),country,Americas,106977,
-US-WA,WA,us_state,US West,7614893,
-US-WI,WI,us_state,US Midwest,5822434,
-US-WV,WV,us_state,US South,1792147,
-US-WY,WY,us_state,US West,578759,
+US-VA,Virginia,us_state,US South,8535519,
 WLF,Wallis and Futuna,country,Oceania,,
+US-WA,Washington,us_state,US West,7614893,
+US-WV,West Virginia,us_state,US South,1792147,
 ESH,Western Sahara,country,Africa,,
+US-WI,Wisconsin,us_state,US Midwest,5822434,
 WLD,World,country,other,7594270356,20540749
+US-WY,Wyoming,us_state,US West,578759,
 YEM,Yemen,country,Asia,28498687,19949
 ZMB,Zambia,country,Africa,17351822,34704
 ZWE,Zimbabwe,country,Africa,14439018,24546
