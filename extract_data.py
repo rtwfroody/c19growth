@@ -122,6 +122,18 @@ class Regions(object):
                     entry.get('subgroup', "other"), entry.get('population'),
                     total_beds])
 
+def shorten(country_name):
+    table = {
+            "United States of America": "United States",
+            "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+            "Iran (Islamic Republic of)": "Iran",
+            "Taiwan, Province of China": "Taiwan",
+            "Moldova, Republic of": "Moldova",
+            "Bolivia (Plurinational State of)": "Bolivia",
+            "Korea, Republic of": "South Korea",
+            }
+    return table.get(country_name, country_name)
+
 def main():
     regions = Regions()
     for entry in read_csv(open("data/all.csv")):
@@ -129,7 +141,7 @@ def main():
                 code=entry['alpha-3'],
                 group='country',
                 subgroup=entry['region'],
-                name=entry['name'])
+                name=shorten(entry['name']))
 
     for entry in read_csv(open("data/API_SP.POP.TOTL_DS2_en_csv_v2_821007.csv"), skip=4):
         for year in range(2020, 2000, -1):

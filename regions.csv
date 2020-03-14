@@ -28,7 +28,7 @@ BLZ,Belize,country,Americas,383071,498
 BEN,Benin,country,Africa,11485048,5743
 BMU,Bermuda,country,Americas,63968,
 BTN,Bhutan,country,Asia,754394,1282
-BOL,Bolivia (Plurinational State of),country,Americas,11353142,12488
+BOL,Bolivia,country,Americas,11353142,12488
 BES,"Bonaire, Sint Eustatius and Saba",country,Americas,,
 BIH,Bosnia and Herzegovina,country,Europe,3323929,11634
 BWA,Botswana,country,Africa,2254126,4057
@@ -139,7 +139,7 @@ IND,India,country,Asia,1352617328,946832
 US-IN,Indiana,us_state,US Midwest,6732219,
 IDN,Indonesia,country,Asia,267663435,321196
 US-IA,Iowa,us_state,US Midwest,3155070,
-IRN,Iran (Islamic Republic of),country,Asia,81800269,122700
+IRN,Iran,country,Asia,81800269,122700
 IRQ,Iraq,country,Asia,38433600,53807
 IRL,Ireland,country,Europe,4853506,13590
 IMN,Isle of Man,country,Europe,84077,133
@@ -155,7 +155,6 @@ US-KY,Kentucky,us_state,US South,4467673,
 KEN,Kenya,country,Africa,51393010,71950
 KIR,Kiribati,country,Oceania,115847,220
 PRK,Korea (Democratic People's Republic of),country,Asia,25549819,337258
-KOR,"Korea, Republic of",country,Asia,51635256,593805
 XKX,Kosovo,country,other,1845300,
 KWT,Kuwait,country,Asia,4137309,8275
 KGZ,Kyrgyzstan,country,Asia,6315800,28421
@@ -202,7 +201,7 @@ MIC,Middle income,country,other,5678540888,13632320
 US-MN,Minnesota,us_state,US Midwest,5639632,
 US-MS,Mississippi,us_state,US South,2976149,
 US-MO,Missouri,us_state,US Midwest,6137428,
-MDA,"Moldova, Republic of",country,Europe,3545883,20566
+MDA,Moldova,country,Europe,3545883,20566
 MCO,Monaco,country,Europe,38682,534
 MNG,Mongolia,country,Asia,3170208,22191
 US-MT,Montana,us_state,US West,1068778,
@@ -290,6 +289,7 @@ TSA,South Asia (IDA & IBRD),country,other,1814388744,1223373
 US-SC,South Carolina,us_state,US South,5148714,
 US-SD,South Dakota,us_state,US Midwest,884659,
 SGS,South Georgia and the South Sandwich Islands,country,Americas,,
+KOR,South Korea,country,Asia,51635256,593805
 SSD,South Sudan,country,Africa,10975920,
 ESP,Spain,country,Europe,46723749,140171
 LKA,Sri Lanka,country,Asia,21670000,78012
@@ -302,7 +302,7 @@ SJM,Svalbard and Jan Mayen,country,Europe,,
 SWE,Sweden,country,Europe,10183175,26476
 CHE,Switzerland,country,Europe,8516543,40028
 SYR,Syrian Arab Republic,country,Asia,16906283,25359
-TWN,"Taiwan, Province of China",country,Asia,23603049,
+TWN,Taiwan,country,Asia,23603049,
 TJK,Tajikistan,country,Asia,9100837,43684
 TZA,"Tanzania, United Republic of",country,Africa,56318348,39423
 US-TN,Tennessee,us_state,US South,6829174,
@@ -321,9 +321,9 @@ TUV,Tuvalu,country,Oceania,11508,64
 UGA,Uganda,country,Africa,42723139,21362
 UKR,Ukraine,country,Europe,44622516,392678
 ARE,United Arab Emirates,country,Asia,9630959,11557
-GBR,United Kingdom of Great Britain and Northern Ireland,country,Europe,66488991,186169
+GBR,United Kingdom,country,Europe,66488991,186169
+USA,United States,country,Americas,327167434,948786
 UMI,United States Minor Outlying Islands,country,Oceania,,
-USA,United States of America,country,Americas,327167434,948786
 UMC,Upper middle income,country,other,2655635719,10223261
 URY,Uruguay,country,Americas,3449299,9658
 US-UT,Utah,us_state,US West,3205958,
