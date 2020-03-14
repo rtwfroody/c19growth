@@ -257,7 +257,6 @@ function updateForm()
     }
 
     var div = document.getElementById("options_form");
-    var form = document.createElement("form");
     var grouped = {}
 
     for (var id in data.confirmed) {
@@ -268,18 +267,30 @@ function updateForm()
         grouped[region.group][region.name] = region
     }
 
-    var table = document.createElement("table")
-    tr = document.createElement("tr")
+    var tab_list = document.createElement("ul")
+    var tab_div = document.createElement("div")
+    tab_div.setAttribute("id", "tabs")
+    tab_div.appendChild(tab_list)
+    div.appendChild(tab_div)
+    var i = 0
     for (var group of Object.keys(grouped).sort()) {
-        td = document.createElement("td")
-        var fieldset = document.createElement("fieldset")
-        var legend = document.createElement("legend")
-        legend.innerHTML = group
-        fieldset.appendChild(legend)
+        i += 1
+        var li = document.createElement("li")
+        var a = document.createElement("a")
+        a.setAttribute("href", "#tabs-" + i)
+        a.innerHTML = group
+        li.appendChild(a)
+        tab_list.appendChild(li)
+
+        var tab = document.createElement("div")
+        tab.setAttribute("id", "tabs-" + i)
+
+        //var fieldset = document.createElement("fieldset")
+        //var legend = document.createElement("legend")
+        //legend.innerHTML = group
+        //fieldset.appendChild(legend)
         var subgroups = {}
         for (name of Object.keys(grouped[group]).sort()) {
-            var check_div = document.createElement("div")
-            check_div.setAttribute("class", "regbox")
             region = grouped[group][name]
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
@@ -288,11 +299,10 @@ function updateForm()
                 input.setAttribute("checked", true);
             }
             input.setAttribute("onClick", "updateGraph()")
-            check_div.appendChild(input)
+            tab.appendChild(input)
 
-            add_label(check_div, region.id, region.name)
+            add_label(tab, region.id, region.name)
             subgroups[region.subgroup] = 1
-            fieldset.appendChild(check_div)
         }
 
         p = document.createElement("p")
@@ -303,19 +313,15 @@ function updateForm()
                 'updateSelection("' + group + '", "' + subgroup + '", 1)')
         }
 
-        td.appendChild(fieldset)
+        tab.appendChild(p)
 
-        td.appendChild(p)
         p = document.createElement("p")
         add_button(p, "clear_all_" + group, "Clear All", 'updateSelection("' + group + '", "all", 0)')
-        td.appendChild(p)
-
-        tr.appendChild(td)
+        tab.appendChild(p)
+        tab_div.appendChild(tab)
     }
-    table.appendChild(tr)
-    form.appendChild(table)
 
-    table = document.createElement("table")
+    var table = document.createElement("table")
     tr = document.createElement("tr")
     th = document.createElement("th")
     th.setAttribute("align", "left")
@@ -347,11 +353,11 @@ function updateForm()
 
     table.appendChild(tr)
 
-    form.appendChild(table)
-    div.appendChild(form);
+    div.appendChild(table)
 
     $( 'input[type="checkbox"]' ).checkboxradio({icon: false});
     $( 'input[type="radio"]' ).checkboxradio({});
+    $( "#tabs" ).tabs();
 }
 
 function updateGraph()
