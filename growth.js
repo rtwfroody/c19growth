@@ -361,8 +361,9 @@ function updateGraph()
     url.hash = ""
 
     var layout = {
-            margin: { t: 0 },
+            margin: { t: 20 },
             yaxis: {},
+            showlegend: true,
         }
 
     if (document.getElementById('deaths').checked) {
