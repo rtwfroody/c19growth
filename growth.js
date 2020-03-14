@@ -336,8 +336,10 @@ function updateForm()
     add_radio(fieldset, "log_scale", "scale", log, "Log Scale")
 
     var fieldset = add_fieldset(div, "Type")
+    add_radio(fieldset, "active", "stat", url.hash.includes(";act"), "Active")
     add_radio(fieldset, "confirmed", "stat",
-        !(url.hash.includes(";dth") || url.hash.includes(";rec")), "Confirmed")
+        !(url.hash.includes(";dth") || url.hash.includes(";rec") || url.hash.includes(";act")),
+        "Confirmed")
     add_radio(fieldset, "deaths", "stat", url.hash.includes(";dth"), "Deaths")
     add_radio(fieldset, "recovered", "stat", url.hash.includes(";rec"), "Recovered")
 
@@ -366,6 +368,7 @@ function updateGraph()
             showlegend: true,
         }
 
+    var cases_active = false;
     if (document.getElementById('deaths').checked) {
         url.hash += ";dth"
         cases = "deaths"
@@ -374,6 +377,12 @@ function updateGraph()
         url.hash += ";rec"
         cases = "recovered"
         layout.yaxis.title = 'Recovered'
+    } else if (document.getElementById('active').checked) {
+        url.hash += ";act"
+        cases = "confirmed"
+        // And then we treat them special in the loop below.
+        cases_active = true
+        layout.yaxis.title = 'Active'
     } else {
         cases = "confirmed"
         layout.yaxis.title = 'Confirmed cases'
@@ -395,21 +404,28 @@ function updateGraph()
             x: data['dates'],
             name: region.name
         };
+        trace.y = data[cases][id]
+        if (cases_active) {
+            // Copy the array
+            trace.y = trace.y.slice()
+            for (var i = 0; i < trace.y.length; i++) {
+                trace.y[i] -= data.deaths[id][i]
+                trace.y[i] -= data.recovered[id][i]
+            }
+        }
         if (relative_cases) {
             if (!region.population) {
                 error.innerHTML += "ERROR: Don't know population for " + region.name + ".<br/>"
                 continue
             }
-            trace.y = data[cases][id].map(x => 100000.0 * x / region.population)
+            trace.y = trace.y.map(x => 100000.0 * x / region.population)
         } else if (cases_per_bed) {
             if (!region.hospital_beds) {
                 error.innerHTML += "ERROR: Don't know number of hospital beds for " +
                     region.name + ".<br/>"
                 continue
             }
-            trace.y = data[cases][id].map(x => x / region.hospital_beds)
-        } else {
-            trace.y = data[cases][id]
+            trace.y = trace.y.map(x => x / region.hospital_beds)
         }
         for (var i = 0; i < trace.y.length; i++) {
             if (trace.y[i] > 0) {
