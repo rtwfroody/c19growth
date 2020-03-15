@@ -104,6 +104,7 @@ function buildSequence(csv, name_to_id)
             if (!(id in data.regions) && !id.startsWith("US-agg-")) {
                 data.regions[id] = {
                     'group': "country",
+                    'subgroup': "Other",
                     'name': name,
                     'id': id
                 }
