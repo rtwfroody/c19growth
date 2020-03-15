@@ -131,6 +131,7 @@ def shorten(country_name):
             "Moldova, Republic of": "Moldova",
             "Bolivia (Plurinational State of)": "Bolivia",
             "Korea, Republic of": "South Korea",
+            "Venezuela (Bolivarian Republic of)": "Venezuela"
             }
     return table.get(country_name, country_name)
 
