@@ -2,6 +2,23 @@ var data = {
     'regions': {},
 };
 
+function* color_generator()
+{
+    while (1) {
+        for (var s of ['100%', '60%', '80%']) {
+            for (var l of ['50%', '30%', '70%']) {
+                for (var h of [0, 60, 120, 180, 240, 300, 20, 80, 140, 200,
+                    260, 320, 40, 100, 160, 220, 280, 340]) {
+                    var color = "hsl(" + h + "," + s + "," + l + ")"
+                    console.log(">>>", color)
+                    yield color
+                }
+            }
+        }
+    }
+}
+var colorgen = color_generator()
+
 function buildSequence(csv, name_to_id)
 {
     const province_state = 0;
@@ -106,7 +123,7 @@ function buildSequence(csv, name_to_id)
                     'group': "country",
                     'subgroup': "Other",
                     'name': name,
-                    'id': id
+                    'id': id,
                 }
                 name_to_id[name] = id
                 console.log("WARNING: Don't have region details (like population) for", name, id)
@@ -194,7 +211,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
             'group': row[2],
             'subgroup': row[3],
             'population': row[4],
-            'hospital_beds': row[5]
+            'hospital_beds': row[5],
         }
         data.regions[row[0]] = info
         name_to_id[row[1]] = row[0]
@@ -403,9 +420,16 @@ function updateGraph()
             continue
         }
 
+        if (!('color' in region)) {
+            region.color = colorgen.next().value
+            console.log("assign", region.color, "to", region.name)
+        }
         var trace = {
             x: data['dates'],
-            name: region.name
+            name: region.name,
+            line: {
+                color: region.color
+            }
         };
         trace.y = data[cases][id]
         if (cases_active) {
