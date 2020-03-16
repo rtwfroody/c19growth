@@ -7,7 +7,7 @@ function* color_generator()
     while (1) {
         for (var s of ['100%', '60%', '80%']) {
             for (var l of ['50%', '30%', '70%']) {
-                for (var h of [0, 60, 120, 180, 240, 300, 20, 80, 140, 200,
+                for (var h of [0, 120, 180, 240, 300, 20, 80, 140, 200,
                     260, 320, 40, 100, 160, 220, 280, 340]) {
                     var color = "hsl(" + h + "," + s + "," + l + ")"
                     yield color
