@@ -10,7 +10,6 @@ function* color_generator()
                 for (var h of [0, 60, 120, 180, 240, 300, 20, 80, 140, 200,
                     260, 320, 40, 100, 160, 220, 280, 340]) {
                     var color = "hsl(" + h + "," + s + "," + l + ")"
-                    console.log(">>>", color)
                     yield color
                 }
             }
@@ -201,6 +200,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Cote d'Ivoire": "CIV",
         "Reunion": "REU",
         "Congo (Kinshasa)": "COD",
+        "Congo (Brazzaville)": "COG",
         "Curacao": "CUW",
         "Venezuela (Bolivarian Republic of)": "VEN"
     }
@@ -422,7 +422,6 @@ function updateGraph()
 
         if (!('color' in region)) {
             region.color = colorgen.next().value
-            console.log("assign", region.color, "to", region.name)
         }
         var trace = {
             x: data['dates'],
