@@ -306,11 +306,11 @@ function spinnerChanged()
 
 function updateShift()
 {
-    region = data.regions[id]
+    var url = new URL(window.location)
 
     var table = document.createElement("table")
 
-    for (id of Object.keys(data[cases]).sort()) {
+    for (id of Object.keys(data["confirmed"]).sort()) {
         region = data.regions[id]
         checkbox = document.getElementById(id)
         if (!checkbox || !(checkbox.checked)) {
@@ -331,7 +331,13 @@ function updateShift()
         if (originalInput) {
             input.setAttribute("value", originalInput.value)
         } else {
-            input.setAttribute("value", 0)
+            var re = new RegExp(';' + region.id + '(-?[0-9]+)')
+            var match = re.exec(url.hash)
+            if (match) {
+                input.setAttribute("value", match[1])
+            } else {
+                input.setAttribute("value", 0)
+            }
         }
         td.appendChild(input)
         tr.appendChild(td)
@@ -351,7 +357,6 @@ function updateShift()
 
 function updateForm()
 {
-
     var url = new URL(window.location)
     if (url.hash == "") {
         url.hash = ";USA"
@@ -541,7 +546,10 @@ function updateGraph()
         }
         traces.push(trace)
 
+        url.hash += ";" + id
+
         if (shift != 0) {
+            url.hash += shift
             var shifted = {}
             Object.assign(shifted, trace)
             shifted.line = {}
@@ -562,8 +570,6 @@ function updateGraph()
             }
             traces.push(shifted)
         }
-
-        url.hash += ";" + id
     }
 
     // Make sure we include the last 0 day.
@@ -607,8 +613,8 @@ $.when(
         $.csv.toArrays(regions_response[0])
     )
     updateForm()
-    updateGraph()
     updateShift()
+    updateGraph()
     var graph = document.getElementById("graph");
     $( function() { $("#dialog").dialog(
         {
