@@ -626,7 +626,7 @@ $.when(
 
         $("#dialog").dialog({
             autoOpen: !isMobile,
-            position: {my: "left top", at: "left top", of: graph}
+            position: {my: "right top", at: "middle top", of: graph}
         })
         $("#dialog-tabs").tabs()
         $("input[type=button]").button()
