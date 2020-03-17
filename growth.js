@@ -227,7 +227,6 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
 
 function add_label(element, id, label) {
     var l = document.createElement('label');
-    l.setAttribute("onDblClick", "doubleClick('" + id + "')")
     l.setAttribute('for', id)
     l.innerHTML = label
     element.appendChild(l)
@@ -287,9 +286,9 @@ function updateSelection(group, subgroup, value)
     updateGraph()
 }
 
-function doubleClick(id)
+function openShift()
 {
-    $( function() { $("#dialog").dialog(); })
+    $("#dialog").dialog("open")
 }
 
 // click is reserved, or something
@@ -446,9 +445,12 @@ function updateForm()
     add_radio(fieldset, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per Capita")
     add_radio(fieldset, "cases_per_bed", "cases", url.hash.includes(";bed"), "Cases per Hospital Bed")
 
-    $( 'input[type="checkbox"]' ).checkboxradio({icon: false});
-    $( 'input[type="radio"]' ).checkboxradio({});
-    $( "#tabs" ).tabs();
+    var fieldset = add_fieldset(div, "Dialog")
+    add_button(fieldset, "open-shift", "Shift", "openShift()")
+
+    $('input[type="checkbox"]').checkboxradio({icon: false});
+    $('input[type="radio"]').checkboxradio({});
+    $("#tabs").tabs();
 }
 
 function updateGraph()
@@ -596,7 +598,7 @@ function updateGraph()
 
     window.history.pushState("", "", url)
 
-    graph = document.getElementById('graph');
+    var graph = document.getElementById('graph');
     Plotly.newPlot(graph, traces, layout);
 }
 
@@ -615,10 +617,15 @@ $.when(
     updateForm()
     updateShift()
     updateGraph()
+
     var graph = document.getElementById("graph");
-    $( function() { $("#dialog").dialog(
-        {
-            position: { my: "left top", at: "left top", of: graph }
-        }) })
+    $(function(){
+        let isMobile = /Mobi/.test(navigator.userAgent)
+
+        $("#dialog").dialog({
+            autoOpen: !isMobile,
+            position: {my: "left top", at: "left top", of: graph}
+        })
+    })
 });
 
