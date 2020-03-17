@@ -202,7 +202,10 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Congo (Kinshasa)": "COD",
         "Congo (Brazzaville)": "COG",
         "Curacao": "CUW",
-        "Venezuela (Bolivarian Republic of)": "VEN"
+        "Venezuela (Bolivarian Republic of)": "VEN",
+        "The Bahamas": "BHS",
+        "Tanzania": "TZA",
+        "Republic of the Congo": "COG"
     }
     for (row of regions_csv) {
         var info = {
