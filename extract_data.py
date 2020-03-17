@@ -145,6 +145,12 @@ def main():
                 subgroup=entry['region'],
                 name=shorten(entry['name']))
 
+    regions.add(
+            code='XKX',
+            group='country',
+            subgroup='Europe',
+            name='Kosovo')
+
     for entry in read_csv(open("data/API_SP.POP.TOTL_DS2_en_csv_v2_821007.csv"), skip=4):
         for year in range(2020, 2000, -1):
             if entry.get(str(year)):
