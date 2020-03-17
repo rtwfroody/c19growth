@@ -345,7 +345,7 @@ function updateShift()
 
     }
 
-    var div = document.getElementById("dialog")
+    var div = document.getElementById("dt-shift")
     div.innerHTML = ""
     div.appendChild(table)
 
@@ -426,30 +426,32 @@ function updateForm()
         tab_div.appendChild(subgroups[subgroup])
     }
 
-    var fieldset = add_fieldset(div, "Scale")
-    log = url.hash.includes(";log")
-    add_radio(fieldset, "linear_scale", "scale", !log, "Linear Scale")
-    add_radio(fieldset, "log_scale", "scale", log, "Log Scale")
+    if (url.hash.includes(";log")) {
+        document.getElementById("log_scale").checked = true
+    } else {
+        document.getElementById("linear_scale").checked = true
+    }
 
-    var fieldset = add_fieldset(div, "Type")
-    add_radio(fieldset, "active", "stat", url.hash.includes(";act"), "Active")
-    add_radio(fieldset, "confirmed", "stat",
-        !(url.hash.includes(";dth") || url.hash.includes(";rec") || url.hash.includes(";act")),
-        "Total")
-    add_radio(fieldset, "deaths", "stat", url.hash.includes(";dth"), "Deaths")
-    add_radio(fieldset, "recovered", "stat", url.hash.includes(";rec"), "Recovered")
+    if (url.hash.includes(";act")) {
+        document.getElementById("active").checked = true
+    } else if (url.hash.includes(";dth")) {
+        document.getElementById("deaths").checked = true
+    } else if (url.hash.includes(";rec")) {
+        document.getElementById("recovered").checked = true
+    } else {
+        document.getElementById("confirmed").checked = true
+    }
 
-    var fieldset = add_fieldset(div, "Relative")
-    add_radio(fieldset, "absolute_cases", "cases",
-        !(url.hash.includes(";rel") || url.hash.includes(";bed")), "Absolute Number of Cases")
-    add_radio(fieldset, "relative_cases", "cases", url.hash.includes(";rel"), "Cases per Capita")
-    add_radio(fieldset, "cases_per_bed", "cases", url.hash.includes(";bed"), "Cases per Hospital Bed")
-
-    var fieldset = add_fieldset(div, "Dialog")
-    add_button(fieldset, "open-shift", "Shift", "openShift()")
+    if (url.hash.includes(";rel")) {
+        document.getElementById("relative_cases").checked = true
+    } else if (url.hash.includes(";bed")) {
+        document.getElementById("cases_per_bed").checked = true
+    } else {
+        document.getElementById("absolute_cases").checked = true
+    }
 
     $('input[type="checkbox"]').checkboxradio({icon: false});
-    $('input[type="radio"]').checkboxradio({});
+    $('input[type="radio"]').checkboxradio({icon: false});
     $("#tabs").tabs();
 }
 
@@ -626,6 +628,8 @@ $.when(
             autoOpen: !isMobile,
             position: {my: "left top", at: "left top", of: graph}
         })
+        $("#dialog-tabs").tabs()
+        $("input[type=button]").button()
     })
 });
 

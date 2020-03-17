@@ -18,8 +18,51 @@ description: Graph of COVID-19 spread in different countries and US states.
 
 <div id="graph" style="width:100%;height:75vh;"></div>
 <div id="error"></div>
-<div id="dialog" title="Shift"></div>
+<div id="dialog" title="Options">
+    <div id="dialog-tabs">
+        <ul>
+            <li><a href="#dt-data">Data</a></li>
+            <li><a href="#dt-scale">Scale</a></li>
+            <li><a href="#dt-shift">Shift</a></li>
+        </ul>
+        <div id="dt-data">
+            <table><tr><td>
+                <input type="radio" id="active" name="stat" onclick="updateGraph()" />
+                <label for="active">Active</label><br />
+                <input type="radio" id="confirmed" name="stat" onclick="updateGraph()" />
+                <label for="confirmed">Confirmed</label><br />
+                <input type="radio" id="deaths" name="stat" onclick="updateGraph()" />
+                <label for="deaths">Deaths</label><br />
+                <input type="radio" id="recovered" name="stat" onclick="updateGraph()" />
+                <label for="recovered">Recovered</label>
+            </td><td>
+                <input type="radio" id="absolute_cases" name="cases" onclick="updateGraph()" />
+                <label for="absolute_cases">Absolute</label><br />
+                <input type="radio" id="relative_cases" name="cases" onclick="updateGraph()" />
+                <label for="relative_cases">per Capita</label><br />
+                <input type="radio" id="cases_per_bed" name="cases" onclick="updateGraph()" />
+                <label for="cases_per_bed">per Hospital Bed</label>
+            </td></tr></table>
+        </div>
+        <div id="dt-scale">
+            <input type="radio"
+                   id="linear_scale"
+                   name="scale"
+                   onclick="updateGraph()" />
+            <label for="linear_scale">Linear</label>
+            <input type="radio"
+                   id="log_scale"
+                   name="scale"
+                   onclick="updateGraph()" />
+            <label for="log_scale">Logarithmic</label>
+        </div>
+        <div id="dt-shift">
+            Shift
+        </div>
+    </div>
+</div>
 <div id="options_form"></div>
+<input type="button" id="open-shift" onClick="openShift()" value="Options" />
 <table>
     <tr>
         <th>Data Sources</th>
