@@ -224,6 +224,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
 
 function add_label(element, id, label) {
     var l = document.createElement('label');
+    l.setAttribute("onDblClick", "doubleClick('" + id + "')")
     l.setAttribute('for', id)
     l.innerHTML = label
     element.appendChild(l)
@@ -242,11 +243,16 @@ function add_radio(element, id, name, checked, text) {
     add_label(element, id, text)
 }
 
-function add_button(element, id, text, onClick) {
+function add_button(element, id, text, onClick, onDblClick) {
     var input = document.createElement('input')
     input.setAttribute("id", id)
     input.setAttribute("type", "button");
-    input.setAttribute("onClick", onClick)
+    if (onClick) {
+        input.setAttribute("onClick", onClick)
+    }
+    if (onDblClick) {
+        input.setAttribute("onDblClick", onDblClick)
+    }
     // TODO: What's the difference between this and setAttribute?
     input.value = text
     element.appendChild(input)
@@ -278,8 +284,71 @@ function updateSelection(group, subgroup, value)
     updateGraph()
 }
 
+function doubleClick(id)
+{
+    $( function() { $("#dialog").dialog(); })
+}
+
+// click is reserved, or something
+function clck(id)
+{
+    updateShift()
+    updateGraph()
+}
+
+function spinnerChanged()
+{
+    updateGraph()
+}
+
+function updateShift()
+{
+    region = data.regions[id]
+
+    var table = document.createElement("table")
+
+    for (id of Object.keys(data[cases]).sort()) {
+        region = data.regions[id]
+        checkbox = document.getElementById(id)
+        if (!checkbox || !(checkbox.checked)) {
+            continue
+        }
+
+        var tr = document.createElement("tr")
+        var td = document.createElement("td")
+        td.innerHTML = region.name
+        tr.appendChild(td)
+
+        td = document.createElement("td")
+        var shift_id = "shift-" + region.id
+        var input = document.createElement('input');
+        input.setAttribute("id", shift_id)
+        input.setAttribute("class", "spinner")
+        originalInput = document.getElementById(shift_id)
+        if (originalInput) {
+            input.setAttribute("value", originalInput.value)
+        } else {
+            input.setAttribute("value", 0)
+        }
+        td.appendChild(input)
+        tr.appendChild(td)
+
+        table.appendChild(tr)
+
+    }
+
+    var div = document.getElementById("dialog")
+    div.innerHTML = ""
+    div.appendChild(table)
+
+    $(".spinner").spinner()
+    $(".spinner").width(50)
+    $(".spinner").on("spinstop", function() { spinnerChanged() })
+}
+
 function updateForm()
 {
+
     var url = new URL(window.location)
     if (url.hash == "") {
         url.hash = ";USA"
@@ -325,7 +394,7 @@ function updateForm()
             if (url.hash.includes(";" + region.id)) {
                 input.setAttribute("checked", true);
             }
-            input.setAttribute("onClick", "updateGraph()")
+            input.setAttribute("onClick", 'clck("' + region.id + '")')
             subgroups[region.subgroup].appendChild(input)
 
             add_label(subgroups[region.subgroup], region.id, region.name)
@@ -420,6 +489,13 @@ function updateGraph()
             continue
         }
 
+        shift_element = document.getElementById("shift-" + id)
+        if (shift_element) {
+            shift = shift_element.value || 0
+        } else {
+            shift = 0
+        }
+
         if (!('color' in region)) {
             region.color = colorgen.next().value
         }
@@ -439,6 +515,7 @@ function updateGraph()
                 trace.y[i] -= data.recovered[id][i]
             }
         }
+
         if (relative_cases) {
             if (!region.population) {
                 error.innerHTML += "ERROR: Don't know population for " + region.name + ".<br/>"
@@ -460,6 +537,29 @@ function updateGraph()
             }
         }
         traces.push(trace)
+
+        if (shift != 0) {
+            var shifted = {}
+            Object.assign(shifted, trace)
+            shifted.line = {}
+            Object.assign(shifted.line, trace.line)
+            shifted.line.dash = 'dash'
+
+            if (shift > 0) {
+                var prefix = []
+                // TODO: There must be an idiomatic way to do this.
+                for (var i = 0; i < shift; i++) {
+                    prefix.push(0)
+                }
+                shifted.y = prefix.concat(shifted.y)
+                shifted.name = region.name + "+" + shift
+            } else if (shift < 0) {
+                shifted.y = shifted.y.slice(-shift, undefined)
+                shifted.name = region.name + shift
+            }
+            traces.push(shifted)
+        }
+
         url.hash += ";" + id
     }
 
@@ -504,6 +604,12 @@ $.when(
         $.csv.toArrays(regions_response[0])
     )
     updateForm()
-    updateGraph();
+    updateGraph()
+    updateShift()
+    var graph = document.getElementById("graph");
+    $( function() { $("#dialog").dialog(
+        {
+            position: { my: "left top", at: "left top", of: graph }
+        }) })
 });
 
