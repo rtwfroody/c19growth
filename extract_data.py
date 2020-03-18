@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import csv
+from bs4 import BeautifulSoup
+import re
 
 def read_csv(f, has_header=True, skip=0):
     reader = csv.reader(f)
@@ -95,7 +97,7 @@ class Regions(object):
         self.data = {}
 
     def add(self, code=None, name=None, group=None, subgroup=None, population=None,
-            hospital_beds=None):
+            hospital_beds=None, hospital_beds_per_1000=None):
         entry = self.data.get(code) or {}
         if not entry.get('code') and code:
             entry['code'] = code
@@ -109,18 +111,24 @@ class Regions(object):
             entry['population'] = population
         if not entry.get('hospital_beds') and hospital_beds:
             entry['hospital_beds'] = hospital_beds
+        if not entry.get('hospital_beds_per_1000') and hospital_beds_per_1000:
+            entry['hospital_beds_per_1000'] = hospital_beds_per_1000
         self.data[entry['code']] = entry
 
     def save(self, path):
         writer = csv.writer(open(path, 'w'))
-        for entry in sorted(self.data.values(), key=lambda v: v['name']):
+        for entry in sorted(self.data.values(), key=lambda v: v.get('name', v['code'])):
             total_beds = None
-            if isinstance(entry.get('hospital_beds'), float) and \
+            if entry.get('hospital_beds'):
+                total_beds = entry['hospital_beds']
+            elif isinstance(entry.get('hospital_beds_per_1000'), float) and \
                     isinstance(entry.get('population'), int):
-                total_beds = round(entry.get('hospital_beds') * entry.get('population') / 1000)
-            writer.writerow([entry['code'], entry['name'], entry['group'],
-                    entry.get('subgroup', "other"), entry.get('population'),
-                    total_beds])
+                total_beds = round(entry.get('hospital_beds_per_1000') * \
+                        entry.get('population') / 1000)
+            writer.writerow([entry['code'], entry.get('name', entry['code']),
+                entry.get('group', 'other'),
+                entry.get('subgroup', "other"), entry.get('population'),
+                total_beds])
 
 def shorten(country_name):
     table = {
@@ -135,6 +143,21 @@ def shorten(country_name):
             "Tanzania, United Republic of": "Tanzania"
             }
     return table.get(country_name, country_name)
+
+def state_hospital_beds():
+    soup = BeautifulSoup(open("data/state_statistics.html").read(), 'html.parser')
+    divs = soup.find_all("div")
+    div = [d for d in divs if d.get('class')==['report']][0]
+    result = {}
+    for tr in div.find_all('tr'):
+        td = tr.find_all('td')
+        if not td:
+            continue
+        if td[0].a and re.match(r'[A-Z]{2} - ', td[0].a.text):
+            state = td[0].a.text[:2]
+            hospital_beds = int(td[2].text.replace(",", ""))
+            result[state] = hospital_beds
+    return result
 
 def main():
     regions = Regions()
@@ -167,7 +190,7 @@ def main():
     for entry in read_csv(open("data/API_SH.MED.BEDS.ZS_DS2_en_csv_v2_821439.csv"), skip=4):
         for year in range(2020, 2000, -1):
             if entry.get(str(year)):
-                beds = float(entry[str(year)])
+                beds_per_1000 = float(entry[str(year)])
                 break
         else:
             print("No hospital bed info for", entry['Country Name'])
@@ -175,7 +198,7 @@ def main():
         regions.add(group='country',
                 name=entry['Country Name'],
                 code=entry['Country Code'],
-                hospital_beds=beds)
+                hospital_beds_per_1000=beds_per_1000)
 
     started = False
     import xlrd
@@ -200,6 +223,9 @@ def main():
                 name=name,
                 code=code,
                 population=population)
+
+    for state, beds in state_hospital_beds().items():
+        regions.add(code='US-' + state, hospital_beds=beds)
 
     # Some CIA World Fact Book, some Wikipedia
     regions.add(code="TWN", population=23603049)

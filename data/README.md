@@ -12,3 +12,6 @@ all.csv
 
 From https://data.worldbank.org/indicator/SH.MED.BEDS.ZS:
 API_SH.MED.BEDS.ZS_DS2_en_csv_v2_821439.csv
+
+From https://www.ahd.com/state_statistics.html:
+state_statistics.html
