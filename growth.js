@@ -287,21 +287,111 @@ function updateSelection(group, subgroup, value)
     updateGraph()
 }
 
-function openShift()
+function openOptions()
 {
-    $("#dialog").dialog("open")
+    $("#options-dialog").dialog("open")
 }
 
 // click is reserved, or something
 function clck(id)
 {
     updateShift()
+    updateMatch()
     updateGraph()
 }
 
 function spinnerChanged()
 {
     updateGraph()
+}
+
+function findMatches(target_id)
+{
+    var cases_active = false
+    var cases
+    if (document.getElementById('deaths').checked) {
+        cases = "deaths"
+    } else if (document.getElementById('recovered').checked) {
+        cases = "recovered"
+    } else if (document.getElementById('active').checked) {
+        cases = "confirmed"
+        // And then we treat them special in the loop below.
+        cases_active = true
+    } else {
+        cases = "confirmed"
+    }
+
+    var [err, target_trace] = makeTrace(target_id, cases, cases_active)
+
+    var results = []
+    for (var id in data["confirmed"]) {
+        if (id == target_id) {
+            continue
+        }
+        var [err, trace] = makeTrace(id, cases, cases_active)
+        if (err) {
+            continue
+        }
+
+        for (var shift = 1; shift < 30; shift++) {
+            var difference = 0
+            for (var i = 0; i < target_trace.y.length - shift; i++) {
+                var delta = trace.y[i] - target_trace.y[i + shift]
+                difference += delta * delta
+            }
+            results.push([difference, id, shift])
+        }
+    }
+    results.sort(function (a, b) { return a[0] - b[0] })
+    return results.slice(0, 10)
+}
+
+function openMatch(id)
+{
+    region = data.regions[id]
+
+    var matches = findMatches(id)
+
+    div = document.getElementById("match-dialog")
+    div.innerHTML = ""
+    ol = document.createElement("ol")
+    for (var match of matches) {
+        var match_id = match[1]
+        var match_region = data.regions[match_id]
+        li = document.createElement("li")
+        li.innerHTML = match_region.name + "+" + match[2]
+        ol.appendChild(li)
+    }
+    div.appendChild(ol)
+
+    $("#match-dialog").dialog({
+        title: region.name,
+    })
+    $("#match-dialog").dialog("open")
+}
+
+function updateMatch()
+{
+    var table = document.createElement("table")
+
+    for (var id of Object.keys(data["confirmed"]).sort()) {
+        region = data.regions[id]
+        checkbox = document.getElementById(id)
+        if (!checkbox || !(checkbox.checked)) {
+            continue
+        }
+
+        var tr = document.createElement("tr")
+        var td = document.createElement("td")
+        add_button(td, "match:" + id, region.name, onClick="openMatch('" + id + "')")
+        tr.appendChild(td)
+
+        table.appendChild(tr)
+    }
+
+    var div = document.getElementById("dt-match")
+    div.innerHTML = ""
+    div.appendChild(table)
 }
 
 function updateShift()
@@ -456,6 +546,41 @@ function updateForm()
     $("#tabs").tabs();
 }
 
+function makeTrace(id, cases, cases_active)
+{
+    var errors = []
+    var region = data.regions[id]
+    var trace = {
+        x: data['dates'],
+        name: region.name,
+        line: {
+            color: region.color
+        }
+    };
+    trace.y = data[cases][id]
+    if (cases_active) {
+        // Copy the array
+        trace.y = trace.y.slice()
+        for (var i = 0; i < trace.y.length; i++) {
+            trace.y[i] -= data.deaths[id][i]
+            trace.y[i] -= data.recovered[id][i]
+        }
+    }
+
+    if (relative_cases) {
+        if (!region.population) {
+            return ["ERROR: Don't know population for " + region.name + ".", undefined]
+        }
+        trace.y = trace.y.map(x => 100000.0 * x / region.population)
+    } else if (cases_per_bed) {
+        if (!region.hospital_beds) {
+            return ["ERROR: Don't know number of hospital beds for " + region.name + ".", undefined]
+        }
+        trace.y = trace.y.map(x => x / region.hospital_beds)
+    }
+    return [undefined, trace]
+}
+
 function updateGraph()
 {
     var error = document.getElementById('error');
@@ -470,7 +595,8 @@ function updateGraph()
             showlegend: true,
         }
 
-    var cases_active = false;
+    var cases_active = false
+    var cases
     if (document.getElementById('deaths').checked) {
         url.hash += ";dth"
         cases = "deaths"
@@ -512,44 +638,20 @@ function updateGraph()
         if (!('color' in region)) {
             region.color = colorgen.next().value
         }
-        var trace = {
-            x: data['dates'],
-            name: region.name,
-            line: {
-                color: region.color
-            }
-        };
-        trace.y = data[cases][id]
-        if (cases_active) {
-            // Copy the array
-            trace.y = trace.y.slice()
-            for (var i = 0; i < trace.y.length; i++) {
-                trace.y[i] -= data.deaths[id][i]
-                trace.y[i] -= data.recovered[id][i]
-            }
-        }
 
-        if (relative_cases) {
-            if (!region.population) {
-                error.innerHTML += "ERROR: Don't know population for " + region.name + ".<br/>"
-                continue
-            }
-            trace.y = trace.y.map(x => 100000.0 * x / region.population)
-        } else if (cases_per_bed) {
-            if (!region.hospital_beds) {
-                error.innerHTML += "ERROR: Don't know number of hospital beds for " +
-                    region.name + ".<br/>"
-                continue
-            }
-            trace.y = trace.y.map(x => x / region.hospital_beds)
+        var [err, trace] = makeTrace(id, cases, cases_active)
+        if (err) {
+            error.innerHTML += err + "<br/>"
+            continue
         }
+        traces.push(trace)
+
         for (var i = 0; i < trace.y.length; i++) {
             if (trace.y[i] > 0) {
                 start_offset = Math.min(i, start_offset)
                 break;
             }
         }
-        traces.push(trace)
 
         url.hash += ";" + id
 
@@ -619,15 +721,20 @@ $.when(
     )
     updateForm()
     updateShift()
+    updateMatch()
     updateGraph()
 
     var graph = document.getElementById("graph");
     $(function(){
         let isMobile = /Mobi/.test(navigator.userAgent)
 
-        $("#dialog").dialog({
+        $("#options-dialog").dialog({
             autoOpen: !isMobile,
             position: {my: "right top", at: "middle top", of: graph}
+        })
+        $("#match-dialog").dialog({
+            autoOpen: false,
+            position: {my: "right left", at: "middle center", of: $("#options-dialog")}
         })
         $("#dialog-tabs").tabs()
         $("input[type=button]").button()

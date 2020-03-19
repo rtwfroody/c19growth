@@ -18,12 +18,13 @@ description: Graph of COVID-19 spread in different countries and US states.
 
 <div id="graph" style="width:100%;height:75vh;"></div>
 <div id="error"></div>
-<div id="dialog" title="Options">
+<div id="options-dialog" title="Options">
     <div id="dialog-tabs">
         <ul>
             <li><a href="#dt-data">Data</a></li>
             <li><a href="#dt-scale">Scale</a></li>
             <li><a href="#dt-shift">Shift</a></li>
+            <li><a href="#dt-match">Match</a></li>
         </ul>
         <div id="dt-data">
             <table><tr><td>
@@ -56,13 +57,14 @@ description: Graph of COVID-19 spread in different countries and US states.
                    onclick="updateGraph()" />
             <label for="log_scale">Logarithmic</label>
         </div>
-        <div id="dt-shift">
-            Shift
-        </div>
+        <div id="dt-shift"></div>
+        <div id="dt-match"></div>
     </div>
 </div>
+<div id="match-dialog" title="Matches">
+</div>
 <div id="options_form"></div>
-<input type="button" id="open-shift" onClick="openShift()" value="Options" />
+<input type="button" onClick="openOptions()" value="Options" />
 <table>
     <tr>
         <th>Data Sources</th>
