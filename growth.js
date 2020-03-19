@@ -130,6 +130,9 @@ function buildSequence(csv, name_to_id)
 
             for (var j = first_date; j < row.length; j++) {
                 row[j] = parseInt(row[j])
+                if (isNaN(row[j])) {
+                    row[j] = row[j-1]
+                }
             }
             if (id in sequence_map) {
                 for (var j = first_date; j < row.length; j++) {
