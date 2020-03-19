@@ -625,6 +625,7 @@ function updateGraph()
     absolute_cases = document.getElementById("absolute_cases").checked
     relative_cases = document.getElementById("relative_cases").checked
     cases_per_bed = document.getElementById("cases_per_bed").checked
+    var max_shift = 0
     for (id of Object.keys(data[cases]).sort()) {
         region = data.regions[id]
         checkbox = document.getElementById(id)
@@ -635,6 +636,7 @@ function updateGraph()
         shift_element = document.getElementById("shift-" + id)
         if (shift_element) {
             shift = shift_element.value || 0
+            max_shift = Math.max(shift, max_shift)
         } else {
             shift = 0
         }
@@ -685,9 +687,13 @@ function updateGraph()
 
     // Make sure we include the last 0 day.
     start_offset = Math.max(start_offset - 1, 0)
+    var future_dates = []
+    for (var i = 0; i < max_shift; i++) {
+        future_dates.push('+' + (i+1))
+    }
     for (var trace of traces) {
         trace.y = trace.y.slice(start_offset, trace.y.length)
-        trace.x = trace.x.slice(start_offset, trace.x.length)
+        trace.x = trace.x.slice(start_offset, trace.x.length).concat(future_dates)
     }
 
     var log_scale = document.getElementById('log_scale')
