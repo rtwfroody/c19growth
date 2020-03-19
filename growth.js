@@ -210,6 +210,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Tanzania": "TZA",
         "Republic of the Congo": "COG",
         "The Gambia": "GMB",
+        "Gambia, The": "GMB",
     }
     for (row of regions_csv) {
         var info = {
