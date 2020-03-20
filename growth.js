@@ -589,6 +589,7 @@ function updateGraph()
 {
     var error = document.getElementById('error');
     error.innerHTML = ""
+    var title = ""
 
     var url = new URL(window.location)
     url.hash = ""
@@ -605,19 +606,23 @@ function updateGraph()
         url.hash += ";dth"
         cases = "deaths"
         layout.yaxis.title = 'Confirmed Deaths'
+        title += "Confirmed COVID-19 Deaths"
     } else if (document.getElementById('recovered').checked) {
         url.hash += ";rec"
         cases = "recovered"
         layout.yaxis.title = 'Confirmed Recovered'
+        title += "Confirmed COVID-19 Recoveries"
     } else if (document.getElementById('active').checked) {
         url.hash += ";act"
         cases = "confirmed"
         // And then we treat them special in the loop below.
         cases_active = true
         layout.yaxis.title = 'Confirmed Active'
+        title += "Confirmed Active COVID-19 Cases"
     } else {
         cases = "confirmed"
         layout.yaxis.title = 'Confirmed Cases'
+        title += "Confirmed COVID-19 Cases"
     }
 
     var traces = []
@@ -704,12 +709,16 @@ function updateGraph()
     if (relative_cases) {
         url.hash += ";rel"
         layout.yaxis.title += ' (per 100,000)'
+        title += " per 100,000 People"
     } else if (cases_per_bed) {
         url.hash += ";bed"
         layout.yaxis.title += ' (per hospital bed)'
+        title += " per Hospital Bed"
     } else {
         layout.yaxis.title += ' (number)'
     }
+    title += " over Time"
+    $(".post-title").html(title)
 
     window.history.pushState("", "", url)
 
