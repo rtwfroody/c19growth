@@ -207,6 +207,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Curacao": "CUW",
         "Venezuela (Bolivarian Republic of)": "VEN",
         "The Bahamas": "BHS",
+        "Bahamas, The": "BHS",
         "Tanzania": "TZA",
         "Republic of the Congo": "COG",
         "The Gambia": "GMB",
