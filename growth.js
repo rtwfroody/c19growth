@@ -351,6 +351,22 @@ function findMatches(target_id)
     return results.slice(0, 10)
 }
 
+function toggleSequence(id, shift)
+{
+    checkbox = document.getElementById(id)
+    checkbox = $("#" + id)
+    if (checkbox.prop("checked") && $("#shift-" + id).val() == shift) {
+        checkbox.prop("checked", false)
+    } else {
+        checkbox.prop("checked", true)
+    }
+    checkbox.checkboxradio("refresh")
+    updateShift()
+    updateMatch()
+    $("#shift-" + id).val(shift)
+    updateGraph()
+}
+
 function openMatch(id)
 {
     region = data.regions[id]
@@ -363,15 +379,15 @@ function openMatch(id)
     for (var match of matches) {
         var match_id = match[1]
         var match_region = data.regions[match_id]
-        li = document.createElement("li")
-        li.innerHTML = match_region.name + "+" + match[2]
+        var li = document.createElement("li")
+        add_button(li, undefined, match_region.name + "+" + match[2],
+            onClick="toggleSequence('" + match_id + "', " + match[2] + ")")
         ol.appendChild(li)
     }
     div.appendChild(ol)
 
-    $("#match-dialog").dialog({
-        title: region.name,
-    })
+    $("input[type=button]").button()
+    $("#match-dialog").dialog({title: region.name})
     $("#match-dialog").dialog("open")
 }
 
@@ -397,6 +413,7 @@ function updateMatch()
     var div = document.getElementById("dt-match")
     div.innerHTML = ""
     div.appendChild(table)
+    $("input[type=button]").button()
 }
 
 function updateShift()
@@ -546,9 +563,11 @@ function updateForm()
         document.getElementById("absolute_cases").checked = true
     }
 
-    $('input[type="checkbox"]').checkboxradio({icon: false});
-    $('input[type="radio"]').checkboxradio({icon: false});
-    $("#tabs").tabs();
+    $(function() {
+        $('input[type="checkbox"]').checkboxradio({icon: false});
+        $('input[type="radio"]').checkboxradio({icon: false});
+        $("#tabs").tabs();
+    })
 }
 
 function makeTrace(id, cases, cases_active)
