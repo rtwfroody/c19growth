@@ -251,10 +251,17 @@ function add_radio(element, id, name, checked, text) {
     add_label(element, id, text)
 }
 
-function add_button(element, id, text, onClick, onDblClick) {
+function add_button(element, id, text, onClick, onDblClick, image=undefined) {
     var input = document.createElement('input')
-    input.setAttribute("id", id)
-    input.setAttribute("type", "button");
+    if (id) {
+        input.setAttribute("id", id)
+    }
+    if (image) {
+        input.setAttribute("type", "image");
+        input.setAttribute("src", image);
+    } else {
+        input.setAttribute("type", "button");
+    }
     if (onClick) {
         input.setAttribute("onClick", onClick)
     }
@@ -300,9 +307,7 @@ function openOptions()
 // click is reserved, or something
 function clck(id)
 {
-    updateShift()
-    updateMatch()
-    updateGraph()
+    updateSelected()
 }
 
 function spinnerChanged()
@@ -327,6 +332,10 @@ function findMatches(target_id)
     }
 
     var [err, target_trace] = makeTrace(target_id, cases, cases_active)
+    if (!target_trace) {
+        /* We don't have info for the currently selected trace. */
+        return []
+    }
 
     var results = []
     for (var id in data["confirmed"]) {
@@ -361,21 +370,38 @@ function toggleSequence(id, shift)
         checkbox.prop("checked", true)
     }
     checkbox.checkboxradio("refresh")
-    updateShift()
-    updateMatch()
+    updateSelected()
     $("#shift-" + id).val(shift)
-    updateGraph()
 }
 
-function openMatch(id)
+function deselect(id)
 {
+    checkbox = document.getElementById(id)
+    checkbox = $("#" + id)
+    checkbox.prop("checked", false)
+    checkbox.checkboxradio("refresh")
+    updateSelected()
+    $("#shift-" + id).val(shift)
+}
+
+var focus = undefined
+function updateMatches(id)
+{
+    if (id) {
+        focus = id
+    } else {
+        id = focus
+    }
     region = data.regions[id]
 
     var matches = findMatches(id)
 
-    div = document.getElementById("match-dialog")
+    div = document.getElementById("matches")
     div.innerHTML = ""
-    ol = document.createElement("ol")
+    var p = document.createElement("p")
+    p.innerHTML = region.name + " today is like:"
+    div.appendChild(p)
+    var ol = document.createElement("ol")
     for (var match of matches) {
         var match_id = match[1]
         var match_region = data.regions[match_id]
@@ -387,13 +413,16 @@ function openMatch(id)
     div.appendChild(ol)
 
     $("input[type=button]").button()
-    $("#match-dialog").dialog({title: region.name})
-    $("#match-dialog").dialog("open")
 }
 
-function updateMatch()
+function updateSelected()
 {
-    var table = document.createElement("table")
+    var url = new URL(window.location)
+
+    var select_table = document.createElement("table")
+    var shift_table = document.createElement("table")
+    var selected_ids = {}
+    var first_selected = undefined
 
     for (var id of Object.keys(data["confirmed"]).sort()) {
         region = data.regions[id]
@@ -402,39 +431,28 @@ function updateMatch()
             continue
         }
 
-        var tr = document.createElement("tr")
-        var td = document.createElement("td")
-        add_button(td, "match:" + id, region.name, onClick="openMatch('" + id + "')")
-        tr.appendChild(td)
-
-        table.appendChild(tr)
-    }
-
-    var div = document.getElementById("dt-match")
-    div.innerHTML = ""
-    div.appendChild(table)
-    $("input[type=button]").button()
-}
-
-function updateShift()
-{
-    var url = new URL(window.location)
-
-    var table = document.createElement("table")
-
-    for (id of Object.keys(data["confirmed"]).sort()) {
-        region = data.regions[id]
-        checkbox = document.getElementById(id)
-        if (!checkbox || !(checkbox.checked)) {
-            continue
+        selected_ids[id] = 1
+        if (!first_selected) {
+            first_selected = id
         }
 
         var tr = document.createElement("tr")
         var td = document.createElement("td")
-        td.innerHTML = region.name
+        td.setAttribute("style", "width:1.5em")
+        var button = document.createElement("img")
+        button.setAttribute("src", "Antu_task-reject.svg")
+        button.setAttribute("alt", "x")
+        button.setAttribute("style", "width:1.4em;height:1.4em;max-width:unset")
+        button.setAttribute("onClick", "deselect('" + id + "')")
+        td.appendChild(button)
         tr.appendChild(td)
+        var td = document.createElement("td")
+        add_button(td, "match:" + id, region.name, onClick="updateMatches('" + id + "')")
+        tr.appendChild(td)
+        select_table.appendChild(tr)
 
-        td = document.createElement("td")
+        var tr = document.createElement("tr")
+        var td = document.createElement("td")
         var shift_id = "shift-" + region.id
         var input = document.createElement('input');
         input.setAttribute("id", shift_id)
@@ -453,18 +471,27 @@ function updateShift()
         }
         td.appendChild(input)
         tr.appendChild(td)
-
-        table.appendChild(tr)
-
+        shift_table.appendChild(tr)
     }
 
-    var div = document.getElementById("dt-shift")
-    div.innerHTML = ""
-    div.appendChild(table)
+    if (!(focus in selected_ids)) {
+        updateMatches(first_selected)
+    }
 
+    var div = document.getElementById("selections")
+    div.innerHTML = ""
+    div.appendChild(select_table)
+
+    var div = document.getElementById("shift")
+    div.innerHTML = ""
+    div.appendChild(shift_table)
+
+    $("input[type=button]").button()
     $(".spinner").spinner()
-    $(".spinner").width(50)
+    $(".spinner").width(40)
     $(".spinner").on("spinstop", function() { spinnerChanged() })
+
+    updateGraph()
 }
 
 function updateForm()
@@ -574,6 +601,9 @@ function makeTrace(id, cases, cases_active)
 {
     var errors = []
     var region = data.regions[id]
+    if (!region) {
+        return ["ERROR: No info for " + id, undefined]
+    }
     var trace = {
         x: data['dates'],
         name: region.name,
@@ -603,6 +633,12 @@ function makeTrace(id, cases, cases_active)
         trace.y = trace.y.map(x => x / region.hospital_beds)
     }
     return [undefined, trace]
+}
+
+function optionsChanged()
+{
+    updateGraph()
+    updateMatches()
 }
 
 function updateGraph()
@@ -759,9 +795,7 @@ $.when(
         $.csv.toArrays(regions_response[0])
     )
     updateForm()
-    updateShift()
-    updateMatch()
-    updateGraph()
+    updateSelected()
 
     var graph = document.getElementById("graph");
     $(function(){
@@ -770,10 +804,6 @@ $.when(
         $("#options-dialog").dialog({
             autoOpen: !isMobile,
             position: {my: "right top", at: "middle top", of: graph}
-        })
-        $("#match-dialog").dialog({
-            autoOpen: false,
-            position: {my: "right left", at: "middle center", of: $("#options-dialog")}
         })
         $("#dialog-tabs").tabs()
         $("input[type=button]").button()

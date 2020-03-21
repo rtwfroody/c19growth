@@ -5,7 +5,8 @@ PUBLISH=\
 	regions.csv \
 	node_modules \
 	wide.css \
-	jquery-ui-1.12.1.custom
+	jquery-ui-1.12.1.custom \
+	Antu_task-reject.svg
 
 all:	regions.csv
 

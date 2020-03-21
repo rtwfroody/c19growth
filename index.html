@@ -23,25 +23,23 @@ description: Graph of COVID-19 spread in different countries and US states.
         <ul>
             <li><a href="#dt-data">Data</a></li>
             <li><a href="#dt-scale">Scale</a></li>
-            <li><a href="#dt-shift">Shift</a></li>
-            <li><a href="#dt-match">Match</a></li>
         </ul>
         <div id="dt-data">
             <table><tr><td>
-                <input type="radio" id="active" name="stat" onclick="updateGraph()" />
+                <input type="radio" id="active" name="stat" onclick="optionsChanged()" />
                 <label for="active">Active</label><br />
-                <input type="radio" id="confirmed" name="stat" onclick="updateGraph()" />
+                <input type="radio" id="confirmed" name="stat" onclick="optionsChanged()" />
                 <label for="confirmed">Confirmed</label><br />
-                <input type="radio" id="deaths" name="stat" onclick="updateGraph()" />
+                <input type="radio" id="deaths" name="stat" onclick="optionsChanged()" />
                 <label for="deaths">Deaths</label><br />
-                <input type="radio" id="recovered" name="stat" onclick="updateGraph()" />
+                <input type="radio" id="recovered" name="stat" onclick="optionsChanged()" />
                 <label for="recovered">Recovered</label>
             </td><td>
-                <input type="radio" id="absolute_cases" name="cases" onclick="updateGraph()" />
+                <input type="radio" id="absolute_cases" name="cases" onclick="optionsChanged()" />
                 <label for="absolute_cases">Absolute</label><br />
-                <input type="radio" id="relative_cases" name="cases" onclick="updateGraph()" />
+                <input type="radio" id="relative_cases" name="cases" onclick="optionsChanged()" />
                 <label for="relative_cases">per Capita</label><br />
-                <input type="radio" id="cases_per_bed" name="cases" onclick="updateGraph()" />
+                <input type="radio" id="cases_per_bed" name="cases" onclick="optionsChanged()" />
                 <label for="cases_per_bed">per Hospital Bed</label>
             </td></tr></table>
         </div>
@@ -57,13 +55,34 @@ description: Graph of COVID-19 spread in different countries and US states.
                    onclick="updateGraph()" />
             <label for="log_scale">Logarithmic</label>
         </div>
-        <div id="dt-shift"></div>
-        <div id="dt-match"></div>
     </div>
 </div>
-<div id="match-dialog" title="Matches">
-</div>
-<div id="options_form"></div>
+<table style="border: 1px solid white; border-collapse: collapse">
+    <tr>
+        <td width="50%" style="vertical-align:top;border:3px solid #fff">
+            <table width="100%">
+                <tr>
+                    <th>Regions</th>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="options_form"></div>
+                    </td>
+                </tr>
+            </table></td>
+        <td width="30%" style="vertical-align:top;border:3px solid #fff"><table>
+                <tr><th>Selected</th><th>Shift</th></tr>
+                <tr>
+                    <td><div id="selections"></div></td>
+                    <td><div id="shift"></div></td>
+                </tr>
+            </table></td>
+        <td width="20%" style="vertical-align:top;border:3px solid #fff"><table>
+                <tr><th>Matches</th></tr>
+                <tr><td><div id="matches"></div></td></tr>
+            </table></td>
+    </tr>
+</table>
 <input type="button" onClick="openOptions()" value="Options" />
 <table>
     <tr>
@@ -75,12 +94,17 @@ description: Graph of COVID-19 spread in different countries and US states.
             <ul>
                 <li><a href="https://github.com/CSSEGISandData/COVID-19">COVID-19 Cases by Johns Hopkins University</a></li>
                 <li><a href="https://data.worldbank.org/indicator/SP.POP.TOTL">Total Population by The World Bank</a></li>
+               <li>X icon By Fabi&aacute;n Alexis - <a
+                       href="https://github.com/fabianalexisinostroza/Antu">GitHub</a>,
+                   CC BY-SA 3.0, <a
+                                     href="https://commons.wikimedia.org/w/index.php?curid=49950930">Wikimedia</a></li>
             </ul>
         </td>
         <td>
             <ul>
                 <li><a href="https://www.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6">Coronavirus COVID-19 Global Cases by Johns Hopkins CSSE</a>
-                    <li><a href="https://infection2020.com/">United States Coronavirus (COVID-19) Tracker</a></li>
+                <li><a href="https://gabgoh.github.io/COVID/index.html">Epidemic Calculator</a></li>
+                <li><a href="https://infection2020.com/">United States Coronavirus (COVID-19) Tracker</a></li>
             </ul>
         </td>
     </tr>
