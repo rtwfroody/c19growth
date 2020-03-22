@@ -1,5 +1,39 @@
+"use strict"
+
+/*
+ * When the user clicks a button, call a do* function that indicates what the
+ * user wants to happen.  That function updates internal state. Then it calls
+ * update* functions for the various parts of the page (graph, regions,
+ * selected, matches, options).
+ */
+
+const data_set = {
+    ACTIVE: 'active',
+    CONFIRMED: 'confirmed',
+    DEATHS: 'deaths',
+    RECOVERED: 'recovered'
+}
+
+const data_per = {
+    ABSOLUTE: 'absolute',
+    CAPITA: 'capita',
+    BED: 'bed'
+}
+
+const scale = {
+    LINEAR: 'linear',
+    LOG: 'log'
+}
+
 var data = {
     'regions': {},
+    'options': {
+        'data_set': data_set.CONFIRMED,
+        'data_per': data_per.ABSOLUTE,
+        'scale': scale.LINEAR
+    },
+    // id -> shift of sequences that are actually selected
+    'selected': {}
 };
 
 function* color_generator()
@@ -86,7 +120,7 @@ function buildSequence(csv, name_to_id)
     var sequence_map = {}
     var unknown = 0
     for (var i = 1; i < csv.length; i++) {
-        row = csv[i]
+        var row = csv[i]
 
         if (row[province_state].startsWith("Unassigned Location")) {
             console.log("WARNING: Skipping", row[country_region], row[province_state])
@@ -146,8 +180,8 @@ function buildSequence(csv, name_to_id)
     // Process state data, and use that to compute new US data.
     var us_sequence = []
     for (var state of Object.values(state_abbreviation)) {
-        state_id = "US-" + state
-        agg_id = "US-agg-" + state
+        var state_id = "US-" + state
+        var agg_id = "US-agg-" + state
         if (agg_id in sequence_map) {
             if (state_id in sequence_map) {
                 for (var i = 0; i < data.dates.length; i++) {
@@ -213,7 +247,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "The Gambia": "GMB",
         "Gambia, The": "GMB",
     }
-    for (row of regions_csv) {
+    for (var row of regions_csv) {
         var info = {
             'id': row[0],
             'name': row[1],
@@ -238,30 +272,12 @@ function add_label(element, id, label) {
     element.appendChild(l)
 }
 
-function add_radio(element, id, name, checked, text) {
-    var input = document.createElement('input');
-    input.setAttribute("type", "radio");
-    input.setAttribute("name", name);
-    input.setAttribute("id", id);
-    if (checked) {
-        input.setAttribute("checked", true);
-    }
-    input.setAttribute("onClick", "updateGraph()")
-    element.appendChild(input)
-    add_label(element, id, text)
-}
-
-function add_button(element, id, text, onClick, onDblClick, image=undefined) {
+function add_button(element, id, text, onClick, onDblClick) {
     var input = document.createElement('input')
     if (id) {
         input.setAttribute("id", id)
     }
-    if (image) {
-        input.setAttribute("type", "image");
-        input.setAttribute("src", image);
-    } else {
-        input.setAttribute("type", "button");
-    }
+    input.setAttribute("type", "button");
     if (onClick) {
         input.setAttribute("onClick", onClick)
     }
@@ -282,12 +298,18 @@ function add_fieldset(element, legend) {
     return fieldset
 }
 
+function doFocus(id)
+{
+    focus = id
+    updateMatches()
+}
+
 function updateSelection(group, subgroup, value)
 {
     var grouped = {}
 
     for (var id in data.confirmed) {
-        region = data.regions[id]
+        var region = data.regions[id]
         if (group != region.group) {
             continue
         }
@@ -296,7 +318,6 @@ function updateSelection(group, subgroup, value)
             button.checked = value
         }
     }
-    updateGraph()
 }
 
 function openOptions()
@@ -305,33 +326,45 @@ function openOptions()
 }
 
 // click is reserved, or something
-function clck(id)
+function doToggle(id)
 {
-    updateSelected()
+    if (id in data.selected) {
+        deselect(id)
+    } else {
+        select(id, 0)
+    }
+    updateAll()
 }
 
-function spinnerChanged()
+function doDeselect(id)
 {
+    deselect(id)
+    updateAll()
+}
+
+function doShift()
+{
+    for (var id in data.selected) {
+        data.selected[id] = $("#shift-" + id).val()
+    }
+    updateAll()
+}
+
+function updateAll()
+{
+    if (!(focus in data.selected)) {
+        focus = Object.keys(data.selected).sort(id => data.regions[id].name)[0]
+    }
+
+    updateSelected()
     updateGraph()
+    updateMatches()
+    updateUrl()
 }
 
 function findMatches(target_id)
 {
-    var cases_active = false
-    var cases
-    if (document.getElementById('deaths').checked) {
-        cases = "deaths"
-    } else if (document.getElementById('recovered').checked) {
-        cases = "recovered"
-    } else if (document.getElementById('active').checked) {
-        cases = "confirmed"
-        // And then we treat them special in the loop below.
-        cases_active = true
-    } else {
-        cases = "confirmed"
-    }
-
-    var [err, target_trace] = makeTrace(target_id, cases, cases_active)
+    var [err, target_trace] = makeTrace(target_id)
     if (!target_trace) {
         /* We don't have info for the currently selected trace. */
         return []
@@ -342,7 +375,7 @@ function findMatches(target_id)
         if (id == target_id) {
             continue
         }
-        var [err, trace] = makeTrace(id, cases, cases_active)
+        var [err, trace] = makeTrace(id)
         if (err) {
             continue
         }
@@ -360,59 +393,89 @@ function findMatches(target_id)
     return results.slice(0, 10)
 }
 
-function toggleSequence(id, shift)
+function doToggleSequence(id, shift)
 {
-    checkbox = document.getElementById(id)
-    checkbox = $("#" + id)
-    if (checkbox.prop("checked") && $("#shift-" + id).val() == shift) {
-        checkbox.prop("checked", false)
+    if (data.selected[id] == shift) {
+        deselect(id)
     } else {
-        checkbox.prop("checked", true)
+        select(id, shift)
     }
+    updateAll()
+}
+
+function select(id, shift)
+{
+    data.selected[id] = shift
+    var checkbox = document.getElementById(id)
+    checkbox = $("#" + id)
+    checkbox.prop("checked", true)
     checkbox.checkboxradio("refresh")
-    updateSelected()
-    $("#shift-" + id).val(shift)
+
+    if (!focus) {
+        focus = id
+    }
 }
 
 function deselect(id)
 {
-    checkbox = document.getElementById(id)
+    delete data.selected[id]
+    var checkbox = document.getElementById(id)
     checkbox = $("#" + id)
     checkbox.prop("checked", false)
     checkbox.checkboxradio("refresh")
-    updateSelected()
-    $("#shift-" + id).val(shift)
+
+    if (focus == id) {
+        focus = undefined
+        for (var i in data.regions) {
+            if (i in data.selected) {
+                focus = i
+                break
+            }
+        }
+    }
 }
 
 var focus = undefined
-function updateMatches(id)
+function updateMatches()
 {
-    if (id) {
-        focus = id
-    } else {
-        id = focus
-    }
-    region = data.regions[id]
+    var region = data.regions[focus]
 
-    var matches = findMatches(id)
+    var matches = findMatches(focus)
 
-    div = document.getElementById("matches")
+    var div = document.getElementById("matches")
     div.innerHTML = ""
     var p = document.createElement("p")
-    p.innerHTML = region.name + " today is like:"
+    if (!region) {
+        p.innerHTML = ""
+    } else {
+        p.innerHTML = region.name + " today is like:"
+    }
     div.appendChild(p)
+    if (!region) {
+        return
+    }
     var ol = document.createElement("ol")
     for (var match of matches) {
         var match_id = match[1]
+        var shift = match[2]
         var match_region = data.regions[match_id]
         var li = document.createElement("li")
-        add_button(li, undefined, match_region.name + "+" + match[2],
-            onClick="toggleSequence('" + match_id + "', " + match[2] + ")")
+
+        var input = document.createElement('input');
+        input.setAttribute("type", "checkbox");
+        input.setAttribute("id", match_region.id + shift);
+        if (data.selected[match_region.id] == shift) {
+            input.setAttribute("checked", true)
+        }
+        input.setAttribute("onClick", 'doToggleSequence("' + match_id + '", ' + shift + ')')
+        li.appendChild(input)
+        add_label(li, match_region.id + shift, match_region.name + "+" + shift)
+
         ol.appendChild(li)
     }
     div.appendChild(ol)
 
-    $("input[type=button]").button()
+    $('input[type="checkbox"]').checkboxradio({icon: false});
 }
 
 function updateSelected()
@@ -421,19 +484,13 @@ function updateSelected()
 
     var select_table = document.createElement("table")
     var shift_table = document.createElement("table")
-    var selected_ids = {}
     var first_selected = undefined
 
-    for (var id of Object.keys(data["confirmed"]).sort()) {
-        region = data.regions[id]
-        checkbox = document.getElementById(id)
-        if (!checkbox || !(checkbox.checked)) {
-            continue
-        }
+    for (var id of Object.keys(data.selected).sort(id => data.regions[id].name)) {
+        var region = data.regions[id]
 
-        selected_ids[id] = 1
         if (!first_selected) {
-            first_selected = id
+            first_selected = region.id
         }
 
         var tr = document.createElement("tr")
@@ -443,11 +500,11 @@ function updateSelected()
         button.setAttribute("src", "Antu_task-reject.svg")
         button.setAttribute("alt", "x")
         button.setAttribute("style", "width:1.4em;height:1.4em;max-width:unset")
-        button.setAttribute("onClick", "deselect('" + id + "')")
+        button.setAttribute("onClick", "doDeselect('" + region.id + "')")
         td.appendChild(button)
         tr.appendChild(td)
         var td = document.createElement("td")
-        add_button(td, "match:" + id, region.name, onClick="updateMatches('" + id + "')")
+        add_button(td, "match:" + region.id, region.name, "doFocus('" + region.id + "')")
         tr.appendChild(td)
         select_table.appendChild(tr)
 
@@ -457,25 +514,10 @@ function updateSelected()
         var input = document.createElement('input');
         input.setAttribute("id", shift_id)
         input.setAttribute("class", "spinner")
-        originalInput = document.getElementById(shift_id)
-        if (originalInput) {
-            input.setAttribute("value", originalInput.value)
-        } else {
-            var re = new RegExp(';' + region.id + '(-?[0-9]+)')
-            var match = re.exec(url.hash)
-            if (match) {
-                input.setAttribute("value", match[1])
-            } else {
-                input.setAttribute("value", 0)
-            }
-        }
+        input.setAttribute("value", data.selected[id])
         td.appendChild(input)
         tr.appendChild(td)
         shift_table.appendChild(tr)
-    }
-
-    if (!(focus in selected_ids)) {
-        updateMatches(first_selected)
     }
 
     var div = document.getElementById("selections")
@@ -489,12 +531,11 @@ function updateSelected()
     $("input[type=button]").button()
     $(".spinner").spinner()
     $(".spinner").width(40)
-    $(".spinner").on("spinstop", function() { spinnerChanged() })
-
-    updateGraph()
+    // TODO: would like to pass id to spin function
+    $(".spinner").on("spinstop", function() { doShift() })
 }
 
-function updateForm()
+function updateRegions()
 {
     var url = new URL(window.location)
     if (url.hash == "") {
@@ -541,7 +582,7 @@ function updateForm()
             if (url.hash.includes(";" + region.id)) {
                 input.setAttribute("checked", true);
             }
-            input.setAttribute("onClick", 'clck("' + region.id + '")')
+            input.setAttribute("onClick", 'doToggle("' + region.id + '")')
             subgroups[region.subgroup].appendChild(input)
 
             add_label(subgroups[region.subgroup], region.id, region.name)
@@ -562,29 +603,29 @@ function updateForm()
 //        tab_div.appendChild(tab)
     }
 
-    for (subgroup of Object.keys(subgroups).sort()) {
+    for (var subgroup of Object.keys(subgroups).sort()) {
         tab_div.appendChild(subgroups[subgroup])
     }
 
-    if (url.hash.includes(";log")) {
+    if (data.options.scale == scale.LOG) {
         document.getElementById("log_scale").checked = true
     } else {
         document.getElementById("linear_scale").checked = true
     }
 
-    if (url.hash.includes(";act")) {
+    if (data.options.data_set == data_set.ACTIVE) {
         document.getElementById("active").checked = true
-    } else if (url.hash.includes(";dth")) {
+    } else if (data.options.data_set == data_set.DEATHS) {
         document.getElementById("deaths").checked = true
-    } else if (url.hash.includes(";rec")) {
+    } else if (data.options.data_set == data_set.RECOVERED) {
         document.getElementById("recovered").checked = true
     } else {
         document.getElementById("confirmed").checked = true
     }
 
-    if (url.hash.includes(";rel")) {
+    if (data.options.data_per == data_per.CAPITA) {
         document.getElementById("relative_cases").checked = true
-    } else if (url.hash.includes(";bed")) {
+    } else if (data.options.data_per == data_per.BED) {
         document.getElementById("cases_per_bed").checked = true
     } else {
         document.getElementById("absolute_cases").checked = true
@@ -597,8 +638,18 @@ function updateForm()
     })
 }
 
-function makeTrace(id, cases, cases_active)
+function makeTrace(id)
 {
+    var cases
+    var cases_active
+    if (data.options.data_set == data_set.ACTIVE) {
+        cases = data_set.CONFIRMED
+        cases_active = true
+    } else {
+        cases = data.options.data_set
+        cases_active = false
+    }
+
     var errors = []
     var region = data.regions[id]
     if (!region) {
@@ -621,12 +672,12 @@ function makeTrace(id, cases, cases_active)
         }
     }
 
-    if (relative_cases) {
+    if (data.options.data_per == data_per.CAPITA) {
         if (!region.population) {
             return ["ERROR: Don't know population for " + region.name + ".", undefined]
         }
         trace.y = trace.y.map(x => 100000.0 * x / region.population)
-    } else if (cases_per_bed) {
+    } else if (data.options.data_per == data_per.BED) {
         if (!region.hospital_beds) {
             return ["ERROR: Don't know number of hospital beds for " + region.name + ".", undefined]
         }
@@ -635,10 +686,30 @@ function makeTrace(id, cases, cases_active)
     return [undefined, trace]
 }
 
-function optionsChanged()
+function doChangeOptions()
 {
-    updateGraph()
-    updateMatches()
+    if (document.getElementById("active").checked) {
+        data.options.data_set = data_set.ACTIVE
+    } else if (document.getElementById("deaths").checked) {
+        data.options.data_set = data_set.DEATHS
+    } else if (document.getElementById("recovered").checked) {
+        data.options.data_set = data_set.RECOVERED
+    } else {
+        data.options.data_set = data_set.CONFIRMED
+    }
+    if (document.getElementById("relative_cases").checked) {
+        data.options.data_per = data_per.CAPITA
+    } else if (document.getElementById("cases_per_bed").checked) {
+        data.options.data_per = data_per.BED
+    } else {
+        data.options.data_per = data_per.ABSOLUTE
+    }
+    if (document.getElementById("log_scale").checked) {
+        data.options.scale = scale.LOG
+    } else {
+        data.options.scale = scale.LINEAR
+    }
+    updateAll()
 }
 
 function updateGraph()
@@ -646,9 +717,6 @@ function updateGraph()
     var error = document.getElementById('error');
     error.innerHTML = ""
     var title = ""
-
-    var url = new URL(window.location)
-    url.hash = ""
 
     var layout = {
             margin: { t: 20 },
@@ -658,55 +726,36 @@ function updateGraph()
 
     var cases_active = false
     var cases
-    if (document.getElementById('deaths').checked) {
-        url.hash += ";dth"
-        cases = "deaths"
-        layout.yaxis.title = 'Confirmed Deaths'
-        title += "Confirmed COVID-19 Deaths"
-    } else if (document.getElementById('recovered').checked) {
-        url.hash += ";rec"
-        cases = "recovered"
-        layout.yaxis.title = 'Confirmed Recovered'
-        title += "Confirmed COVID-19 Recoveries"
-    } else if (document.getElementById('active').checked) {
-        url.hash += ";act"
-        cases = "confirmed"
-        // And then we treat them special in the loop below.
-        cases_active = true
-        layout.yaxis.title = 'Confirmed Active'
-        title += "Confirmed Active COVID-19 Cases"
-    } else {
-        cases = "confirmed"
-        layout.yaxis.title = 'Confirmed Cases'
-        title += "Confirmed COVID-19 Cases"
+    switch (data.options.data_set) {
+        case data_set.ACTIVE:
+            layout.yaxis.title = 'Confirmed Active'
+            title += "Confirmed Active COVID-19 Cases"
+            break;
+        case data_set.CONFIRMED:
+            layout.yaxis.title = 'Confirmed Cases'
+            title += "Confirmed COVID-19 Cases"
+            break;
+        case data_set.DEATHS:
+            layout.yaxis.title = 'Confirmed Deaths'
+            title += "Confirmed COVID-19 Deaths"
+            break;
+        case data_set.RECOVERED:
+            layout.yaxis.title = 'Confirmed Recovered'
+            title += "Confirmed COVID-19 Recoveries"
+            break;
     }
 
     var traces = []
     var start_offset = Number.MAX_VALUE
-    absolute_cases = document.getElementById("absolute_cases").checked
-    relative_cases = document.getElementById("relative_cases").checked
-    cases_per_bed = document.getElementById("cases_per_bed").checked
     var max_shift = 0
-    for (id of Object.keys(data[cases]).sort()) {
-        region = data.regions[id]
-        checkbox = document.getElementById(id)
-        if (!checkbox || !(checkbox.checked)) {
-            continue
-        }
-
-        shift_element = document.getElementById("shift-" + id)
-        if (shift_element) {
-            shift = shift_element.value || 0
-            max_shift = Math.max(shift, max_shift)
-        } else {
-            shift = 0
-        }
+    for (var id of Object.keys(data.selected).sort()) {
+        var region = data.regions[id]
 
         if (!('color' in region)) {
             region.color = colorgen.next().value
         }
 
-        var [err, trace] = makeTrace(id, cases, cases_active)
+        var [err, trace] = makeTrace(id)
         if (err) {
             error.innerHTML += err + "<br/>"
             continue
@@ -720,10 +769,8 @@ function updateGraph()
             }
         }
 
-        url.hash += ";" + id
-
+        var shift = data.selected[id]
         if (shift != 0) {
-            url.hash += shift
             var shifted = {}
             Object.assign(shifted, trace)
             shifted.line = {}
@@ -757,29 +804,100 @@ function updateGraph()
         trace.x = trace.x.slice(start_offset, trace.x.length).concat(future_dates)
     }
 
-    var log_scale = document.getElementById('log_scale')
-    if (log_scale.checked) {
-        url.hash += ";log"
+    if (data.options.scale == scale.LOG) {
         layout.yaxis.type = 'log'
     }
-    if (relative_cases) {
-        url.hash += ";rel"
-        layout.yaxis.title += ' (per 100,000)'
-        title += " per 100,000 People"
-    } else if (cases_per_bed) {
-        url.hash += ";bed"
-        layout.yaxis.title += ' (per hospital bed)'
-        title += " per Hospital Bed"
-    } else {
-        layout.yaxis.title += ' (number)'
+    switch (data.options.data_per) {
+        case data_per.ABSOLUTE:
+            layout.yaxis.title += ' (number)'
+            break;
+        case data_per.CAPITA:
+            layout.yaxis.title += ' (per 100,000)'
+            title += " per 100,000 People"
+            break;
+        case data_per.BED:
+            layout.yaxis.title += ' (per hospital bed)'
+            title += " per Hospital Bed"
+            break;
     }
     title += " over Time"
     $(".post-title").html(title)
 
-    window.history.pushState("", "", url)
-
     var graph = document.getElementById('graph');
     Plotly.newPlot(graph, traces, layout);
+}
+
+function updateUrl()
+{
+    var parts = []
+    switch (data.options.data_set) {
+        case data_set.ACTIVE:
+            parts.push("act")
+            break
+        case data_set.CONFIRMED:
+            break
+        case data_set.DEATHS:
+            parts.push("dth")
+            break
+        case data_set.RECOVERED:
+            parts.push("rec")
+            break
+    }
+    switch (data.options.data_per) {
+        case data_per.ABSOLUTE:
+            break
+        case data_per.CAPITA:
+            parts.push("rel")
+            break
+        case data_per.BED:
+            parts.push("bed")
+            break
+    }
+    switch (data.options.scale) {
+        case scale.LINEAR:
+            break
+        case scale.LOG:
+            parts.push("log")
+    }
+
+    for (var id in data.selected) {
+        if (data.selected[id]) {
+            parts.push(id + data.selected[id])
+        } else {
+            parts.push(id)
+        }
+    }
+
+    var url = new URL(window.location)
+    url.hash = parts.join(";")
+    window.history.pushState("", "", url)
+}
+
+function parseUrl()
+{
+    var url = new URL(window.location)
+    for (var part of url.hash.slice(1).split(";")) {
+        var re = new RegExp('([-A-Za-z]+)(-?[0-9]*)')
+        var match = re.exec(part)
+        if (part == "") {
+        } else if (match && match[1] in data.regions) {
+            data.selected[match[1]] = parseInt(match[2]) || 0
+        } else if (part == "act") {
+            data.options.data_set = data_set.ACTIVE
+        } else if (part == "dth") {
+            data.options.data_set = data_set.DEATHS
+        } else if (part == "rec") {
+            data.options.data_set = data_set.RECOVERED
+        } else if (part == "rel") {
+            data.options.data_per = data_per.CAPITA
+        } else if (part == "bed") {
+            data.options.data_per = data_per.BED
+        } else if (part == "log") {
+            data.options.scale = scale.LOG
+        } else {
+            console.log("ERROR: Don't know what to do with " + part + " in URL (" + url.hash + ").")
+        }
+    }
 }
 
 $.when(
@@ -794,8 +912,9 @@ $.when(
         $.csv.toArrays(recovered_response[0]),
         $.csv.toArrays(regions_response[0])
     )
-    updateForm()
-    updateSelected()
+    parseUrl()
+    updateRegions()
+    updateAll()
 
     var graph = document.getElementById("graph");
     $(function(){
@@ -809,4 +928,3 @@ $.when(
         $("input[type=button]").button()
     })
 });
-
