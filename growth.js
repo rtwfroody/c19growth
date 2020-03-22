@@ -765,6 +765,7 @@ function updateGraph()
         }
 
         var shift = data.selected[id]
+        max_shift = Math.max(shift, max_shift)
         if (shift != 0) {
             var shifted = {}
             Object.assign(shifted, trace)
