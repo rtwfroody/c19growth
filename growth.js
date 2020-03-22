@@ -537,11 +537,6 @@ function updateSelected()
 
 function updateRegions()
 {
-    var url = new URL(window.location)
-    if (url.hash == "") {
-        url.hash = ";USA"
-    }
-
     var div = document.getElementById("options_form");
     var grouped = {}
 
@@ -579,7 +574,7 @@ function updateRegions()
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
             input.setAttribute("id", region.id);
-            if (url.hash.includes(";" + region.id)) {
+            if (region.id in data.selected) {
                 input.setAttribute("checked", true);
             }
             input.setAttribute("onClick", 'doToggle("' + region.id + '")')
@@ -876,6 +871,11 @@ function updateUrl()
 function parseUrl()
 {
     var url = new URL(window.location)
+
+    if (url.hash == "") {
+        url.hash = "USA"
+    }
+
     for (var part of url.hash.slice(1).split(";")) {
         var re = new RegExp('([-A-Za-z]+)(-?[0-9]*)')
         var match = re.exec(part)
