@@ -19,4 +19,4 @@ c19:	all
 	    ssh relax.casualhacker.net make -C www-hugo
 
 regions.csv:	data/*
-	python3 simplify_population.py
+	python3 extract_data.py
