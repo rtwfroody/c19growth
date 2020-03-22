@@ -383,12 +383,13 @@ function findMatches(target_id)
             continue
         }
 
-        for (var shift = 1; shift < 30; shift++) {
+        for (var shift = 0; shift < target_trace.y.length; shift++) {
             var difference = 0
             for (var i = 0; i < target_trace.y.length - shift; i++) {
                 var delta = trace.y[i] - target_trace.y[i + shift]
                 difference += delta * delta
             }
+            difference /= target_trace.y.length - shift
             results.push([difference, id, shift])
         }
     }
@@ -401,6 +402,11 @@ function findMatches(target_id)
             continue
         }
         seen[id] = true
+        var shift = r[2]
+        if (shift == 0) {
+            // This is not an interesting match
+            continue
+        }
         unique_results.push(r)
         if (unique_results.length >= 10) {
             break
@@ -470,26 +476,32 @@ function updateMatches()
     if (!region) {
         return
     }
-    var ol = document.createElement("ol")
-    for (var match of matches) {
-        var match_id = match[1]
-        var shift = match[2]
-        var match_region = data.regions[match_id]
-        var li = document.createElement("li")
+    if (matches.length > 0) {
+        var ol = document.createElement("ol")
+        for (var match of matches) {
+            var match_id = match[1]
+            var shift = match[2]
+            var match_region = data.regions[match_id]
+            var li = document.createElement("li")
 
-        var input = document.createElement('input');
-        input.setAttribute("type", "checkbox");
-        input.setAttribute("id", match_region.id + shift);
-        if (data.selected[match_region.id] == shift) {
-            input.setAttribute("checked", true)
+            var input = document.createElement('input');
+            input.setAttribute("type", "checkbox");
+            input.setAttribute("id", match_region.id + shift);
+            if (data.selected[match_region.id] == shift) {
+                input.setAttribute("checked", true)
+            }
+            input.setAttribute("onClick", 'doToggleSequence("' + match_id + '", ' + shift + ')')
+            li.appendChild(input)
+            add_label(li, match_region.id + shift, match_region.name + "+" + shift)
+
+            ol.appendChild(li)
         }
-        input.setAttribute("onClick", 'doToggleSequence("' + match_id + '", ' + shift + ')')
-        li.appendChild(input)
-        add_label(li, match_region.id + shift, match_region.name + "+" + shift)
-
-        ol.appendChild(li)
+        div.appendChild(ol)
+    } else {
+        var p = document.createElement("p")
+        p.innerHTML = "No other region"
+        div.appendChild(p)
     }
-    div.appendChild(ol)
 
     $('input[type="checkbox"]').checkboxradio({icon: false});
 }
