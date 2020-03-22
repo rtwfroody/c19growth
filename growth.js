@@ -390,7 +390,21 @@ function findMatches(target_id)
         }
     }
     results.sort(function (a, b) { return a[0] - b[0] })
-    return results.slice(0, 10)
+    var seen = {}
+    var unique_results = []
+    for (var r of results) {
+        var id = r[1]
+        if (id in seen) {
+            continue
+        }
+        seen[id] = true
+        unique_results.push(r)
+        if (unique_results.length >= 10) {
+            break
+        }
+    }
+    console.log(unique_results)
+    return unique_results
 }
 
 function doToggleSequence(id, shift)
