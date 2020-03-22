@@ -5,6 +5,7 @@ From https://datahub.io/JohnSnowLabs/country-and-continent-codes-list:
 country-and-continent-codes-list-csv_csv.csv
 
 From US Census
+https://www.census.gov/data/tables/time-series/demo/popest/2010s-state-total.html
 nst-est2019-01.xlsx
 
 From https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv:
