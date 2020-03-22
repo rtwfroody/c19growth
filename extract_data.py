@@ -88,6 +88,7 @@ us_regions = {
         }
 
 def region_for_state(abbrev):
+    return "US State"
     for region, states in us_regions.items():
         if abbrev in states:
             return region
