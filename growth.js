@@ -246,6 +246,8 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Republic of the Congo": "COG",
         "The Gambia": "GMB",
         "Gambia, The": "GMB",
+        "Cape Verde": "CPV",
+        "East Timor": "TLS",
     }
     for (var row of regions_csv) {
         var info = {
