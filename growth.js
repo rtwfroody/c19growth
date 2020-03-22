@@ -347,7 +347,7 @@ function doShift()
     for (var id in data.selected) {
         data.selected[id] = $("#shift-" + id).val()
     }
-    updateAll()
+    updateGraph()
 }
 
 function updateAll()
