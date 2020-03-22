@@ -403,7 +403,6 @@ function findMatches(target_id)
             break
         }
     }
-    console.log(unique_results)
     return unique_results
 }
 
