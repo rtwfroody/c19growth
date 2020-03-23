@@ -354,12 +354,15 @@ function doShift()
     updateGraph()
 }
 
-function updateAll()
-{
+function updateFocus() {
     if (!(focus in data.selected)) {
         focus = Object.keys(data.selected).sort(id => data.regions[id].name)[0]
     }
+}
 
+function updateAll()
+{
+    updateFocus()
     updateSelected()
     updateGraph()
     updateMatches()
@@ -584,14 +587,14 @@ function updateRegions()
     div.appendChild(tab_div)
     var i = 0
     var subgroups = {}
+    var active_tab
     for (var group of Object.keys(grouped).sort()) {
         for (name of Object.keys(grouped[group]).sort()) {
             var region = grouped[group][name]
             if (!(region.subgroup in subgroups)) {
-                i += 1
-
                 subgroups[region.subgroup] = document.createElement("div")
                 subgroups[region.subgroup].setAttribute("id", "tabs-" + i)
+                subgroups[region.subgroup].setAttribute("n", i)
 
                 var li = document.createElement("li")
                 var a = document.createElement("a")
@@ -599,6 +602,8 @@ function updateRegions()
                 a.innerHTML = region.subgroup
                 li.appendChild(a)
                 tab_list.appendChild(li)
+
+                i++
             }
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
@@ -610,21 +615,11 @@ function updateRegions()
             subgroups[region.subgroup].appendChild(input)
 
             add_label(subgroups[region.subgroup], region.id, region.name)
+
+            if (region.id == focus) {
+                active_tab = subgroups[region.subgroup].getAttribute("n")
+            }
         }
-
-//        p = document.createElement("p")
-//        p.innerHTML = "Select "
-//        add_button(p, "select_all_" + group, "All", 'updateSelection("' + group + '", "all", 1)')
-//        for (subgroup of Object.keys(subgroups).sort()) {
-//            add_button(p, "select_" + subgroup + "_" + group, subgroup,
-//                'updateSelection("' + group + '", "' + subgroup + '", 1)')
-//        }
-//        tab.appendChild(p)
-
-//        p = document.createElement("p")
-//        add_button(p, "clear_all_" + group, "Clear All", 'updateSelection("' + group + '", "all", 0)')
-//        tab.appendChild(p)
-//        tab_div.appendChild(tab)
     }
 
     for (var subgroup of Object.keys(subgroups).sort()) {
@@ -658,7 +653,7 @@ function updateRegions()
     $(function() {
         $('input[type="checkbox"]').checkboxradio({icon: false});
         $('input[type="radio"]').checkboxradio({icon: false});
-        $("#tabs").tabs();
+        $("#tabs").tabs({active: active_tab});
     })
 }
 
@@ -943,6 +938,7 @@ $.when(
         $.csv.toArrays(regions_response[0])
     )
     parseUrl()
+    updateFocus()
     updateRegions()
     updateAll()
 
