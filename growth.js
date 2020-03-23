@@ -681,10 +681,9 @@ function makeTrace(id)
             color: region.color
         }
     };
-    trace.y = data[cases][id]
+    trace.y = data[cases][id].slice()
     if (cases_active) {
         // Copy the array
-        trace.y = trace.y.slice()
         for (var i = 0; i < trace.y.length; i++) {
             trace.y[i] -= data.deaths[id][i]
             trace.y[i] -= data.recovered[id][i]
@@ -702,6 +701,20 @@ function makeTrace(id)
         }
         trace.y = trace.y.map(x => x / region.hospital_beds)
     }
+
+    if (data.options.daily) {
+        // Smooth
+        var smooth = []
+        for (var i = 0; i < trace.y.length; i++) {
+            smooth[i] = (trace.y[i] + trace.y[i-1]) / 2
+        }
+        trace.y = smooth
+        // Make daily
+        for (var i = trace.y.length-1; i > 0; i--) {
+            trace.y[i] -= trace.y[i-1]
+        }
+    }
+
     return [undefined, trace]
 }
 
@@ -728,6 +741,8 @@ function doChangeOptions()
     } else {
         data.options.scale = scale.LINEAR
     }
+    data.options.daily = document.getElementById("daily").checked
+
     updateAll()
 }
 
