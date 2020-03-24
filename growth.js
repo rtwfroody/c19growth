@@ -372,7 +372,6 @@ function updateAll()
 function findMatches(target_id)
 {
     var [err, target_trace] = makeTrace(target_id)
-    console.log("target:", target_trace.y)
     if (!target_trace) {
         /* We don't have info for the currently selected trace. */
         return []
@@ -403,7 +402,6 @@ function findMatches(target_id)
         }
     }
     results.sort(function (a, b) { return a[0] - b[0] })
-    console.log("results:", results)
     var seen = {}
     var unique_results = []
     for (var r of results) {
@@ -691,7 +689,8 @@ function makeTrace(id)
         name: region.name,
         line: {
             color: region.color
-        }
+        },
+        marker_color: region.color
     };
     trace.y = data[cases][id].slice()
     if (cases_active) {
