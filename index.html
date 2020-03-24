@@ -22,36 +22,36 @@ description: Graph of COVID-19 spread in different countries and US states.
         <div id="dt-data">
             <table>
                 <tr>
-                    <td colspan="2">
-                        <fieldset>
+                    <td colspan="2" style="text-align:center">
+                        <div class="controlgroup">
                         <input type="radio" id="cumulative" name="dc" onclick="doChangeOptions()" />
                         <label for="cumulative">Cumulative</label>
                         <input type="radio" id="daily" name="dc" onclick="doChangeOptions()" />
                         <label for="daily">Daily</label>
-                        </fieldset>
+                        </div>
                     </td>
                 </tr>
                 <tr>
-                    <td>
-                        <fieldset>
+                    <td style="vertical-align:top">
+                        <div class="controlgroup-vertical">
                         <input type="radio" id="active" name="stat" onclick="doChangeOptions()" />
-                        <label for="active">Active</label><br />
+                        <label for="active">Active</label>
                         <input type="radio" id="confirmed" name="stat" onclick="doChangeOptions()" />
-                        <label for="confirmed">Confirmed</label><br />
+                        <label for="confirmed">Confirmed</label>
                         <input type="radio" id="deaths" name="stat" onclick="doChangeOptions()" />
-                        <label for="deaths">Deaths</label><br />
+                        <label for="deaths">Deaths</label>
                         <input type="radio" id="recovered" name="stat" onclick="doChangeOptions()" />
                         <label for="recovered">Recovered</label>
-                        </fieldset>
-                    </td><td>
-                        <fieldset>
+                        </div>
+                    </td><td style="vertical-align:top">
+                        <div class="controlgroup-vertical">
                         <input type="radio" id="absolute_cases" name="cases" onclick="doChangeOptions()" />
-                        <label for="absolute_cases">Absolute</label><br />
+                        <label for="absolute_cases">Absolute</label>
                         <input type="radio" id="relative_cases" name="cases" onclick="doChangeOptions()" />
-                        <label for="relative_cases">per Capita</label><br />
+                        <label for="relative_cases">per Capita</label>
                         <input type="radio" id="cases_per_bed" name="cases" onclick="doChangeOptions()" />
                         <label for="cases_per_bed">per Hospital Bed</label>
-                        </fieldset>
+                        </div>
                     </td>
                 </tr>
             </table>

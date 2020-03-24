@@ -372,6 +372,7 @@ function updateAll()
 function findMatches(target_id)
 {
     var [err, target_trace] = makeTrace(target_id)
+    console.log("target:", target_trace.y)
     if (!target_trace) {
         /* We don't have info for the currently selected trace. */
         return []
@@ -389,15 +390,20 @@ function findMatches(target_id)
 
         for (var shift = 0; shift < target_trace.y.length; shift++) {
             var difference = 0
+            for (var i = 0; i < shift; i++) {
+                var delta = target_trace.y[i]
+                difference += delta * delta
+            }
             for (var i = 0; i < target_trace.y.length - shift; i++) {
                 var delta = trace.y[i] - target_trace.y[i + shift]
                 difference += delta * delta
             }
-            difference /= target_trace.y.length - shift
+            //difference /= target_trace.y.length - shift
             results.push([difference, id, shift])
         }
     }
     results.sort(function (a, b) { return a[0] - b[0] })
+    console.log("results:", results)
     var seen = {}
     var unique_results = []
     for (var r of results) {
@@ -650,6 +656,12 @@ function updateRegions()
         document.getElementById("absolute_cases").checked = true
     }
 
+    if (data.options.daily) {
+        document.getElementById("daily").checked = true
+    } else {
+        document.getElementById("cumulative").checked = true
+    }
+
     $(function() {
         $('input[type="checkbox"]').checkboxradio({icon: false});
         $('input[type="radio"]').checkboxradio({icon: false});
@@ -703,12 +715,13 @@ function makeTrace(id)
     }
 
     if (data.options.daily) {
-        // Smooth
+        /*
         var smooth = []
         for (var i = 0; i < trace.y.length; i++) {
             smooth[i] = (trace.y[i] + trace.y[i-1]) / 2
         }
         trace.y = smooth
+        */
         // Make daily
         for (var i = trace.y.length-1; i > 0; i--) {
             trace.y[i] -= trace.y[i-1]
@@ -784,6 +797,7 @@ function updateGraph()
     var max_shift = 0
     for (var id of Object.keys(data.selected).sort()) {
         var region = data.regions[id]
+        var shift = data.selected[id]
 
         if (!('color' in region)) {
             region.color = colorgen.next().value
@@ -794,7 +808,12 @@ function updateGraph()
             error.innerHTML += err + "<br/>"
             continue
         }
-        traces.push(trace)
+        if (data.options.daily) {
+            trace.type = 'bar'
+        }
+        if (!data.options.daily || shift == 0) {
+            traces.push(trace)
+        }
 
         for (var i = 0; i < trace.y.length; i++) {
             if (trace.y[i] > 0) {
@@ -803,7 +822,6 @@ function updateGraph()
             }
         }
 
-        var shift = data.selected[id]
         max_shift = Math.max(shift, max_shift)
         if (shift != 0) {
             var shifted = {}
@@ -842,16 +860,21 @@ function updateGraph()
     if (data.options.scale == scale.LOG) {
         layout.yaxis.type = 'log'
     }
+    if (data.options.daily) {
+        layout.yaxis.title += ' (daily '
+    } else {
+        layout.yaxis.title += ' (cumulative '
+    }
     switch (data.options.data_per) {
         case data_per.ABSOLUTE:
-            layout.yaxis.title += ' (number)'
+            layout.yaxis.title += 'number)'
             break;
         case data_per.CAPITA:
-            layout.yaxis.title += ' (per 100,000)'
+            layout.yaxis.title += 'per 100,000)'
             title += " per 100,000 People"
             break;
         case data_per.BED:
-            layout.yaxis.title += ' (per hospital bed)'
+            layout.yaxis.title += 'per hospital bed)'
             title += " per Hospital Bed"
             break;
     }
@@ -894,9 +917,12 @@ function updateUrl()
         case scale.LOG:
             parts.push("log")
     }
+    if (data.options.daily) {
+        parts.push("dly")
+    }
 
     for (var id in data.selected) {
-        if (data.selected[id]) {
+        if (data.selected[id] != 0) {
             parts.push(id + data.selected[id])
         } else {
             parts.push(id)
@@ -934,6 +960,8 @@ function parseUrl()
             data.options.data_per = data_per.BED
         } else if (part == "log") {
             data.options.scale = scale.LOG
+        } else if (part == "dly") {
+            data.options.daily = true
         } else {
             console.log("ERROR: Don't know what to do with " + part + " in URL (" + url.hash + ").")
         }
@@ -967,5 +995,7 @@ $.when(
         })
         $("#dialog-tabs").tabs()
         $("input[type=button]").button()
+        $(".controlgroup").controlgroup()
+        $(".controlgroup-vertical").controlgroup({ "direction": "vertical" });
     })
 });
