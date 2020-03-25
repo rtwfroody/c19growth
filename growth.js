@@ -379,9 +379,12 @@ function updateRegions()
             var id = grouped[group][name]
             var region = regions[id]
             if (!(region.region in subgroups)) {
-                subgroups[region.region] = document.createElement("div")
-                subgroups[region.region].setAttribute("id", "tabs-" + i)
-                subgroups[region.region].setAttribute("n", i)
+                var div = document.createElement("div")
+                div.setAttribute("id", "tabs-" + i)
+                div.setAttribute("n", i)
+                var table = document.createElement("table")
+
+                subgroups[region.subgroup] = table
 
                 var li = document.createElement("li")
                 var a = document.createElement("a")
@@ -392,6 +395,9 @@ function updateRegions()
 
                 i++
             }
+
+            var tr = document.createElement("tr")
+
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
             input.setAttribute("id", id);
@@ -399,9 +405,17 @@ function updateRegions()
                 input.setAttribute("checked", true);
             }
             input.setAttribute("onClick", 'doToggle("' + id + '")')
-            subgroups[region.region].appendChild(input)
 
-            add_label(subgroups[region.region], id, region.name)
+            var td = document.createElement("td")
+            td.appendChild(input)
+            tr.appendChild(td)
+
+            var td = document.createElement("td")
+            td.innerHTML = region.name
+            tr.appendChild(td)
+
+            //add_label(td, region.id, region.name)
+            subgroups[region.subgroup].appendChild(tr)
 
             if (id == focus) {
                 active_tab = subgroups[region.region].getAttribute("n")
@@ -444,7 +458,7 @@ function updateRegions()
     }
 
     $(function() {
-        $('input[type="checkbox"]').checkboxradio({icon: false});
+        //$('input[type="checkbox"]').checkboxradio({icon: false});
         $('input[type="radio"]').checkboxradio({icon: false});
         $("#tabs").tabs({active: active_tab});
     })
