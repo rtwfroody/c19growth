@@ -221,7 +221,6 @@ function select(id, shift)
     var checkbox = document.getElementById(id)
     checkbox = $("#" + id)
     checkbox.prop("checked", true)
-    checkbox.checkboxradio("refresh")
 
     if (!focus) {
         focus = id
@@ -234,7 +233,6 @@ function deselect(id)
     var checkbox = document.getElementById(id)
     checkbox = $("#" + id)
     checkbox.prop("checked", false)
-    checkbox.checkboxradio("refresh")
 
     if (focus == id) {
         focus = undefined
@@ -276,8 +274,9 @@ function updateMatches()
 
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
+            input.setAttribute("class", "match");
             input.setAttribute("id", match_id + shift);
-            if (options.selected[match_id] == shift) {
+            if (data.selected[match_id] == shift) {
                 input.setAttribute("checked", true)
             }
             input.setAttribute("onClick", 'doToggleSequence("' + match_id + '", ' + shift + ')')
@@ -287,13 +286,14 @@ function updateMatches()
             ol.appendChild(li)
         }
         div.appendChild(ol)
+
+
+        $('.match').checkboxradio({icon: false});
     } else {
         var p = document.createElement("p")
         p.innerHTML = "No other region"
         div.appendChild(p)
     }
-
-    $('input[type="checkbox"]').checkboxradio({icon: false});
 }
 
 function updateSelected()
@@ -383,8 +383,9 @@ function updateRegions()
                 div.setAttribute("id", "tabs-" + i)
                 div.setAttribute("n", i)
                 var table = document.createElement("table")
+                div.appendChild(table)
 
-                subgroups[region.subgroup] = table
+                subgroups[region.subgroup] = div
 
                 var li = document.createElement("li")
                 var a = document.createElement("a")
@@ -397,6 +398,7 @@ function updateRegions()
             }
 
             var tr = document.createElement("tr")
+            tr.setAttribute("onClick", 'doToggle("' + region.id + '")')
 
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
@@ -404,7 +406,6 @@ function updateRegions()
             if (id in options.selected) {
                 input.setAttribute("checked", true);
             }
-            input.setAttribute("onClick", 'doToggle("' + id + '")')
 
             var td = document.createElement("td")
             td.appendChild(input)
@@ -414,7 +415,18 @@ function updateRegions()
             td.innerHTML = region.name
             tr.appendChild(td)
 
-            //add_label(td, region.id, region.name)
+            var td = document.createElement("td")
+            td.innerHTML = data.confirmed[region.id].velocity
+            tr.appendChild(td)
+
+            var td = document.createElement("td")
+            td.innerHTML = data.confirmed[region.id].acceleration
+            tr.appendChild(td)
+
+            var td = document.createElement("td")
+            td.innerHTML = data.confirmed[region.id].jerk
+            tr.appendChild(td)
+
             subgroups[region.subgroup].appendChild(tr)
 
             if (id == focus) {
