@@ -141,17 +141,8 @@ function buildSequence(csv, name_to_id)
         }
         var ids = [id]
 
-        if (row[country_region] == "US") {
-            // The data contains both county data and state aggregate data.  We
-            // aggregate them separately, then clean it up below.
-            if (row[province_state] in state_abbreviation) {
-                ids.push("US-agg-" + state_abbreviation[row[province_state]])
-            } else if (row[province_state].match(/, *[A-Z][A-Z]/)) {
-                ids.push("US-" + row[province_state].replace(/.*, */, "").slice(0, 2))
-            }
-        }
         for (id of ids) {
-            if (!(id in data.regions) && !id.startsWith("US-agg-")) {
+            if (!(id in data.regions)) {
                 data.regions[id] = {
                     'group': "country",
                     'subgroup': "Other",
@@ -177,36 +168,10 @@ function buildSequence(csv, name_to_id)
             }
         }
     }
-    // Process state data, and use that to compute new US data.
-    var us_sequence = []
-    for (var state of Object.values(state_abbreviation)) {
-        var state_id = "US-" + state
-        var agg_id = "US-agg-" + state
-        if (agg_id in sequence_map) {
-            if (state_id in sequence_map) {
-                for (var i = 0; i < data.dates.length; i++) {
-                    sequence_map[state_id][i] =
-                        Math.max(sequence_map[state_id][i], sequence_map[agg_id][i])
-                }
-            } else {
-                sequence_map[state_id] = sequence_map[agg_id]
-            }
-            delete sequence_map["US-agg-" + state]
-        }
-        if (state_id in sequence_map) {
-            for (var i = 0; i < data.dates.length; i++) {
-                if (!us_sequence[i]) {
-                    us_sequence[i] = 0
-                }
-                us_sequence[i] += sequence_map[state_id][i]
-            }
-        }
-    }
-    sequence_map['USA'] = us_sequence
     return sequence_map
 }
 
-function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
+function buildData(confirmed_csv, deaths_csv, regions_csv)
 {
     // Prepopulate with names Johns Hopkins uses.
     var name_to_id = {
@@ -249,6 +214,7 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
         "Cape Verde": "CPV",
         "East Timor": "TLS",
         "Syria": "SYR",
+        "Laos": "LAO",
     }
     for (var row of regions_csv) {
         var info = {
@@ -260,12 +226,13 @@ function buildData(confirmed_csv, deaths_csv, recovered_csv, regions_csv)
             'hospital_beds': row[5],
         }
         data.regions[row[0]] = info
-        name_to_id[row[1]] = row[0]
+        if (row[2] == 'country') {
+            name_to_id[row[1]] = row[0]
+        }
     }
 
     data.confirmed = buildSequence(confirmed_csv, name_to_id)
     data.deaths = buildSequence(deaths_csv, name_to_id)
-    data.recovered = buildSequence(recovered_csv, name_to_id)
 }
 
 function add_label(element, id, label) {
@@ -732,12 +699,8 @@ function makeTrace(id)
 
 function doChangeOptions()
 {
-    if (document.getElementById("active").checked) {
-        data.options.data_set = data_set.ACTIVE
-    } else if (document.getElementById("deaths").checked) {
+    if (document.getElementById("deaths").checked) {
         data.options.data_set = data_set.DEATHS
-    } else if (document.getElementById("recovered").checked) {
-        data.options.data_set = data_set.RECOVERED
     } else {
         data.options.data_set = data_set.CONFIRMED
     }
@@ -968,15 +931,13 @@ function parseUrl()
 }
 
 $.when(
-    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv"),
-    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"),
-    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv"),
+    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"),
+    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"),
     $.get("regions.csv"),
-).then(function(confirmed_response, deaths_response, recovered_response, regions_response) {
+).then(function(confirmed_response, deaths_response, regions_response) {
     buildData(
         $.csv.toArrays(confirmed_response[0]),
         $.csv.toArrays(deaths_response[0]),
-        $.csv.toArrays(recovered_response[0]),
         $.csv.toArrays(regions_response[0])
     )
     parseUrl()
