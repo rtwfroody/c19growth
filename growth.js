@@ -771,11 +771,12 @@ function cleanRegions()
         }
     }
 
+    all_dates = Object.keys(all_dates).sort()
     for (var code in regions) {
         var region = regions[code]
         for (var t in region.data) {
             var last = 0
-            for (var d in all_dates) {
+            for (var d of all_dates) {
                 if (d in region.data[t]) {
                     last = region.data[t][d]
                 } else {
