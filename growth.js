@@ -9,7 +9,7 @@
 
 const data_set = {
     ACTIVE: 'active',
-    CONFIRMED: 'confirmed',
+    CONFIRMED: 'cases',
     DEATHS: 'deaths',
     RECOVERED: 'recovered'
 }
@@ -25,16 +25,14 @@ const scale = {
     LOG: 'log'
 }
 
-var data = {
-    'regions': {},
-    'options': {
-        'data_set': data_set.CONFIRMED,
-        'data_per': data_per.ABSOLUTE,
-        'scale': scale.LINEAR
-    },
+var regions = {}
+var options = {
+    'data_set': data_set.CONFIRMED,
+    'data_per': data_per.ABSOLUTE,
+    'scale': scale.LINEAR,
     // id -> shift of sequences that are actually selected
     'selected': {}
-};
+}
 
 function* color_generator()
 {
@@ -51,189 +49,6 @@ function* color_generator()
     }
 }
 var colorgen = color_generator()
-
-function buildSequence(csv, name_to_id)
-{
-    const province_state = 0;
-    const country_region = 1;
-    const first_date = 4;
-
-    var state_abbreviation = {
-        "Alabama": "AL",
-        "Alaska": "AK",
-        "Arizona": "AZ",
-        "Arkansas": "AR",
-        "California": "CA",
-        "Colorado": "CO",
-        "Connecticut": "CT",
-        "Delaware": "DE",
-        "District of Columbia": "DC",
-        "Florida": "FL",
-        "Georgia": "GA",
-        "Hawaii": "HI",
-        "Idaho": "ID",
-        "Illinois": "IL",
-        "Indiana": "IN",
-        "Iowa": "IA",
-        "Kansas": "KS",
-        "Kentucky": "KY",
-        "Louisiana": "LA",
-        "Maine": "ME",
-        "Maryland": "MD",
-        "Massachusetts": "MA",
-        "Michigan": "MI",
-        "Minnesota": "MN",
-        "Mississippi": "MS",
-        "Missouri": "MO",
-        "Montana": "MT",
-        "Nebraska": "NE",
-        "Nevada": "NV",
-        "New Hampshire": "NH",
-        "New Jersey": "NJ",
-        "New Mexico": "NM",
-        "New York": "NY",
-        "North Carolina": "NC",
-        "North Dakota": "ND",
-        "Ohio": "OH",
-        "Oklahoma": "OK",
-        "Oregon": "OR",
-        "Pennsylvania": "PA",
-        "Rhode Island": "RI",
-        "South Carolina": "SC",
-        "South Dakota": "SD",
-        "Tennessee": "TN",
-        "Texas": "TX",
-        "Utah": "UT",
-        "Vermont": "VT",
-        "Virginia": "VA",
-        "Washington": "WA",
-        "West Virginia": "WV",
-        "Wisconsin": "WI",
-        "Wyoming": "WY",
-    }
-
-    var header = csv[0]
-    if (!('dates' in data)) {
-        data['dates'] = header.slice(first_date, header.length);
-    }
-
-    var sequence_map = {}
-    var unknown = 0
-    for (var i = 1; i < csv.length; i++) {
-        var row = csv[i]
-
-        if (row[province_state].startsWith("Unassigned Location")) {
-            console.log("WARNING: Skipping", row[country_region], row[province_state])
-            // Skip corner case.
-            continue
-        }
-
-        name = row[country_region]
-        var id
-        if (name in name_to_id) {
-            id = name_to_id[name]
-            if (id in data.regions) {
-                name = data.regions[id].name
-            }
-        } else {
-            id = "U" + unknown
-            unknown++
-        }
-        var ids = [id]
-
-        for (id of ids) {
-            if (!(id in data.regions)) {
-                data.regions[id] = {
-                    'group': "country",
-                    'subgroup': "Other",
-                    'name': name,
-                    'id': id,
-                }
-                name_to_id[name] = id
-                console.log("WARNING: Don't have region details (like population) for", name, id)
-            }
-
-            for (var j = first_date; j < row.length; j++) {
-                row[j] = parseInt(row[j])
-                if (isNaN(row[j])) {
-                    row[j] = row[j-1]
-                }
-            }
-            if (id in sequence_map) {
-                for (var j = first_date; j < row.length; j++) {
-                    sequence_map[id][j - first_date] += row[j];
-                }
-            } else {
-                sequence_map[id] = row.slice(first_date, row.length)
-            }
-        }
-    }
-    return sequence_map
-}
-
-function buildData(confirmed_csv, deaths_csv, regions_csv)
-{
-    // Prepopulate with names Johns Hopkins uses.
-    var name_to_id = {
-        "US": "USA",
-        "Mainland China": "CHN",
-        "South Korea": "KOR",
-        "Korea, South": "KOR",
-        "Republic of Korea": "KOR",
-        "Taiwan": "TWN",
-        "Taiwan*": "TWN",
-        "Taipei and environs": "TWN",
-        "Macau": "MAC",
-        "Macao SAR": "MAC",
-        "Vietnam": "VNM",
-        "United Kingdom": "GBR",
-        "UK": "GBR",
-        "Russia": "RUS",
-        "Iran": "IRN",
-        "Czech Republic": "CZE",
-        "Saint Barthelemy": "BLM",
-        "Palestine": "PSE",
-        "occupied Palestinian territory": "PSE",
-        "Moldova": "MDA",
-        "Republic of Moldova": "MDA",
-        "Brunei": "BRN",
-        "Hong Kong SAR": "HKG",
-        "Bolivia": "BOL",
-        "Cote d'Ivoire": "CIV",
-        "Reunion": "REU",
-        "Congo (Kinshasa)": "COD",
-        "Congo (Brazzaville)": "COG",
-        "Curacao": "CUW",
-        "Venezuela (Bolivarian Republic of)": "VEN",
-        "The Bahamas": "BHS",
-        "Bahamas, The": "BHS",
-        "Tanzania": "TZA",
-        "Republic of the Congo": "COG",
-        "The Gambia": "GMB",
-        "Gambia, The": "GMB",
-        "Cape Verde": "CPV",
-        "East Timor": "TLS",
-        "Syria": "SYR",
-        "Laos": "LAO",
-    }
-    for (var row of regions_csv) {
-        var info = {
-            'id': row[0],
-            'name': row[1],
-            'group': row[2],
-            'subgroup': row[3],
-            'population': row[4],
-            'hospital_beds': row[5],
-        }
-        data.regions[row[0]] = info
-        if (row[2] == 'country') {
-            name_to_id[row[1]] = row[0]
-        }
-    }
-
-    data.confirmed = buildSequence(confirmed_csv, name_to_id)
-    data.deaths = buildSequence(deaths_csv, name_to_id)
-}
 
 function add_label(element, id, label) {
     var l = document.createElement('label');
@@ -278,13 +93,13 @@ function updateSelection(group, subgroup, value)
 {
     var grouped = {}
 
-    for (var id in data.confirmed) {
-        var region = data.regions[id]
+    for (var id in regions) {
+        var region = regions[id]
         if (group != region.group) {
             continue
         }
         if (subgroup == "all" || subgroup == region.subgroup) {
-            var button = document.getElementById(region.id);
+            var button = document.getElementById(id);
             button.checked = value
         }
     }
@@ -298,7 +113,7 @@ function openOptions()
 // click is reserved, or something
 function doToggle(id)
 {
-    if (id in data.selected) {
+    if (id in options.selected) {
         deselect(id)
     } else {
         select(id, 0)
@@ -314,16 +129,16 @@ function doDeselect(id)
 
 function doShift()
 {
-    for (var id in data.selected) {
-        data.selected[id] = $("#shift-" + id).val()
+    for (var id in options.selected) {
+        options.selected[id] = $("#shift-" + id).val()
     }
     updateUrl()
     updateGraph()
 }
 
 function updateFocus() {
-    if (!(focus in data.selected)) {
-        focus = Object.keys(data.selected).sort(id => data.regions[id].name)[0]
+    if (!(focus in options.selected)) {
+        focus = Object.keys(options.selected).sort(id => regions[id].name)[0]
     }
 }
 
@@ -345,7 +160,7 @@ function findMatches(target_id)
     }
 
     var results = []
-    for (var id in data["confirmed"]) {
+    for (var id in regions) {
         if (id == target_id) {
             continue
         }
@@ -392,7 +207,7 @@ function findMatches(target_id)
 
 function doToggleSequence(id, shift)
 {
-    if (data.selected[id] == shift) {
+    if (options.selected[id] == shift) {
         deselect(id)
     } else {
         select(id, shift)
@@ -402,7 +217,7 @@ function doToggleSequence(id, shift)
 
 function select(id, shift)
 {
-    data.selected[id] = shift
+    options.selected[id] = shift
     var checkbox = document.getElementById(id)
     checkbox = $("#" + id)
     checkbox.prop("checked", true)
@@ -415,7 +230,8 @@ function select(id, shift)
 
 function deselect(id)
 {
-    delete data.selected[id]
+    console.log("deselect", id)
+    delete options.selected[id]
     var checkbox = document.getElementById(id)
     checkbox = $("#" + id)
     checkbox.prop("checked", false)
@@ -423,8 +239,8 @@ function deselect(id)
 
     if (focus == id) {
         focus = undefined
-        for (var i in data.regions) {
-            if (i in data.selected) {
+        for (var i in regions) {
+            if (i in options.selected) {
                 focus = i
                 break
             }
@@ -435,9 +251,10 @@ function deselect(id)
 var focus = undefined
 function updateMatches()
 {
-    var region = data.regions[focus]
+    var region = regions[focus]
 
     var matches = findMatches(focus)
+    console.log(matches)
 
     var div = document.getElementById("matches")
     div.innerHTML = ""
@@ -456,18 +273,18 @@ function updateMatches()
         for (var match of matches) {
             var match_id = match[1]
             var shift = match[2]
-            var match_region = data.regions[match_id]
+            var match_region = regions[match_id]
             var li = document.createElement("li")
 
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
-            input.setAttribute("id", match_region.id + shift);
-            if (data.selected[match_region.id] == shift) {
+            input.setAttribute("id", match_id + shift);
+            if (options.selected[match_id] == shift) {
                 input.setAttribute("checked", true)
             }
             input.setAttribute("onClick", 'doToggleSequence("' + match_id + '", ' + shift + ')')
             li.appendChild(input)
-            add_label(li, match_region.id + shift, match_region.name + "+" + shift)
+            add_label(li, match_id + shift, match_region.name + "+" + shift)
 
             ol.appendChild(li)
         }
@@ -489,11 +306,11 @@ function updateSelected()
     var shift_table = document.createElement("table")
     var first_selected = undefined
 
-    for (var id of Object.keys(data.selected).sort(id => data.regions[id].name)) {
-        var region = data.regions[id]
+    for (var id of Object.keys(options.selected).sort(id => regions[id].name)) {
+        var region = regions[id]
 
         if (!first_selected) {
-            first_selected = region.id
+            first_selected = id
         }
 
         var tr = document.createElement("tr")
@@ -503,21 +320,21 @@ function updateSelected()
         button.setAttribute("src", "Antu_task-reject.svg")
         button.setAttribute("alt", "x")
         button.setAttribute("style", "width:1.4em;height:1.4em;max-width:unset")
-        button.setAttribute("onClick", "doDeselect('" + region.id + "')")
+        button.setAttribute("onClick", "doDeselect('" + id + "')")
         td.appendChild(button)
         tr.appendChild(td)
         var td = document.createElement("td")
-        add_button(td, "match:" + region.id, region.name, "doFocus('" + region.id + "')")
+        add_button(td, "match:" + id, region.name, "doFocus('" + id + "')")
         tr.appendChild(td)
         select_table.appendChild(tr)
 
         var tr = document.createElement("tr")
         var td = document.createElement("td")
-        var shift_id = "shift-" + region.id
+        var shift_id = "shift-" + id
         var input = document.createElement('input');
         input.setAttribute("id", shift_id)
         input.setAttribute("class", "spinner")
-        input.setAttribute("value", data.selected[id])
+        input.setAttribute("value", options.selected[id])
         td.appendChild(input)
         tr.appendChild(td)
         shift_table.appendChild(tr)
@@ -543,12 +360,12 @@ function updateRegions()
     var div = document.getElementById("options_form");
     var grouped = {}
 
-    for (var id in data.confirmed) {
-        region = data.regions[id]
-        if (!(region.group in grouped)) {
-            grouped[region.group] = {}
+    for (var id in regions) {
+        region = regions[id]
+        if (!(region.region in grouped)) {
+            grouped[region.region] = {}
         }
-        grouped[region.group][region.name] = region
+        grouped[region.region][region.name] = id
     }
 
     var tab_list = document.createElement("ul")
@@ -561,16 +378,17 @@ function updateRegions()
     var active_tab
     for (var group of Object.keys(grouped).sort()) {
         for (name of Object.keys(grouped[group]).sort()) {
-            var region = grouped[group][name]
-            if (!(region.subgroup in subgroups)) {
-                subgroups[region.subgroup] = document.createElement("div")
-                subgroups[region.subgroup].setAttribute("id", "tabs-" + i)
-                subgroups[region.subgroup].setAttribute("n", i)
+            var id = grouped[group][name]
+            var region = regions[id]
+            if (!(region.region in subgroups)) {
+                subgroups[region.region] = document.createElement("div")
+                subgroups[region.region].setAttribute("id", "tabs-" + i)
+                subgroups[region.region].setAttribute("n", i)
 
                 var li = document.createElement("li")
                 var a = document.createElement("a")
                 a.setAttribute("href", "#tabs-" + i)
-                a.innerHTML = region.subgroup
+                a.innerHTML = region.region
                 li.appendChild(a)
                 tab_list.appendChild(li)
 
@@ -578,17 +396,17 @@ function updateRegions()
             }
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
-            input.setAttribute("id", region.id);
-            if (region.id in data.selected) {
+            input.setAttribute("id", id);
+            if (id in options.selected) {
                 input.setAttribute("checked", true);
             }
-            input.setAttribute("onClick", 'doToggle("' + region.id + '")')
-            subgroups[region.subgroup].appendChild(input)
+            input.setAttribute("onClick", 'doToggle("' + id + '")')
+            subgroups[region.region].appendChild(input)
 
-            add_label(subgroups[region.subgroup], region.id, region.name)
+            add_label(subgroups[region.region], id, region.name)
 
-            if (region.id == focus) {
-                active_tab = subgroups[region.subgroup].getAttribute("n")
+            if (id == focus) {
+                active_tab = subgroups[region.region].getAttribute("n")
             }
         }
     }
@@ -597,31 +415,31 @@ function updateRegions()
         tab_div.appendChild(subgroups[subgroup])
     }
 
-    if (data.options.scale == scale.LOG) {
+    if (options.scale == scale.LOG) {
         document.getElementById("log_scale").checked = true
     } else {
         document.getElementById("linear_scale").checked = true
     }
 
-    if (data.options.data_set == data_set.ACTIVE) {
+    if (options.data_set == data_set.ACTIVE) {
         document.getElementById("active").checked = true
-    } else if (data.options.data_set == data_set.DEATHS) {
+    } else if (options.data_set == data_set.DEATHS) {
         document.getElementById("deaths").checked = true
-    } else if (data.options.data_set == data_set.RECOVERED) {
+    } else if (options.data_set == data_set.RECOVERED) {
         document.getElementById("recovered").checked = true
     } else {
         document.getElementById("confirmed").checked = true
     }
 
-    if (data.options.data_per == data_per.CAPITA) {
+    if (options.data_per == data_per.CAPITA) {
         document.getElementById("relative_cases").checked = true
-    } else if (data.options.data_per == data_per.BED) {
+    } else if (options.data_per == data_per.BED) {
         document.getElementById("cases_per_bed").checked = true
     } else {
         document.getElementById("absolute_cases").checked = true
     }
 
-    if (data.options.daily) {
+    if (options.daily) {
         document.getElementById("daily").checked = true
     } else {
         document.getElementById("cumulative").checked = true
@@ -638,56 +456,54 @@ function makeTrace(id)
 {
     var cases
     var cases_active
-    if (data.options.data_set == data_set.ACTIVE) {
+    if (options.data_set == data_set.ACTIVE) {
         cases = data_set.CONFIRMED
         cases_active = true
     } else {
-        cases = data.options.data_set
+        cases = options.data_set
         cases_active = false
     }
 
     var errors = []
-    var region = data.regions[id]
+    var region = regions[id]
     if (!region) {
         return ["ERROR: No info for " + id, undefined]
     }
+    if (!(cases in region.data)) {
+        return ["ERROR: No " + cases + " data for " + id, undefined]
+    }
     var trace = {
-        x: data['dates'],
+        x: Object.keys(region.data[cases]).sort(),
         name: region.name,
         line: {
             color: region.color
         },
         marker_color: region.color
     };
-    trace.y = data[cases][id].slice()
+    trace.y = []
+    for (var d of trace.x) {
+        trace.y.push(region.data[cases][d])
+    }
     if (cases_active) {
-        // Copy the array
         for (var i = 0; i < trace.y.length; i++) {
             trace.y[i] -= data.deaths[id][i]
             trace.y[i] -= data.recovered[id][i]
         }
     }
 
-    if (data.options.data_per == data_per.CAPITA) {
+    if (options.data_per == data_per.CAPITA) {
         if (!region.population) {
             return ["ERROR: Don't know population for " + region.name + ".", undefined]
         }
         trace.y = trace.y.map(x => 100000.0 * x / region.population)
-    } else if (data.options.data_per == data_per.BED) {
+    } else if (options.data_per == data_per.BED) {
         if (!region.hospital_beds) {
             return ["ERROR: Don't know number of hospital beds for " + region.name + ".", undefined]
         }
         trace.y = trace.y.map(x => x / region.hospital_beds)
     }
 
-    if (data.options.daily) {
-        /*
-        var smooth = []
-        for (var i = 0; i < trace.y.length; i++) {
-            smooth[i] = (trace.y[i] + trace.y[i-1]) / 2
-        }
-        trace.y = smooth
-        */
+    if (options.daily) {
         // Make daily
         for (var i = trace.y.length-1; i > 0; i--) {
             trace.y[i] -= trace.y[i-1]
@@ -700,23 +516,23 @@ function makeTrace(id)
 function doChangeOptions()
 {
     if (document.getElementById("deaths").checked) {
-        data.options.data_set = data_set.DEATHS
+        options.data_set = data_set.DEATHS
     } else {
-        data.options.data_set = data_set.CONFIRMED
+        options.data_set = data_set.CONFIRMED
     }
     if (document.getElementById("relative_cases").checked) {
-        data.options.data_per = data_per.CAPITA
+        options.data_per = data_per.CAPITA
     } else if (document.getElementById("cases_per_bed").checked) {
-        data.options.data_per = data_per.BED
+        options.data_per = data_per.BED
     } else {
-        data.options.data_per = data_per.ABSOLUTE
+        options.data_per = data_per.ABSOLUTE
     }
     if (document.getElementById("log_scale").checked) {
-        data.options.scale = scale.LOG
+        options.scale = scale.LOG
     } else {
-        data.options.scale = scale.LINEAR
+        options.scale = scale.LINEAR
     }
-    data.options.daily = document.getElementById("daily").checked
+    options.daily = document.getElementById("daily").checked
 
     updateAll()
 }
@@ -735,7 +551,7 @@ function updateGraph()
 
     var cases_active = false
     var cases
-    switch (data.options.data_set) {
+    switch (options.data_set) {
         case data_set.ACTIVE:
             layout.yaxis.title = 'Confirmed Active'
             title += "Confirmed Active COVID-19 Cases"
@@ -757,9 +573,10 @@ function updateGraph()
     var traces = []
     var start_offset = Number.MAX_VALUE
     var max_shift = 0
-    for (var id of Object.keys(data.selected).sort()) {
-        var region = data.regions[id]
-        var shift = data.selected[id]
+    var date
+    for (var id of Object.keys(options.selected).sort()) {
+        var region = regions[id]
+        var shift = options.selected[id]
 
         if (!('color' in region)) {
             region.color = colorgen.next().value
@@ -770,10 +587,11 @@ function updateGraph()
             error.innerHTML += err + "<br/>"
             continue
         }
-        if (data.options.daily) {
+        date = trace.x[trace.x.length - 1]
+        if (options.daily) {
             trace.type = 'bar'
         }
-        if (!data.options.daily || shift == 0) {
+        if (!options.daily || shift == 0) {
             traces.push(trace)
         }
 
@@ -811,23 +629,27 @@ function updateGraph()
     // Make sure we include the last 0 day.
     start_offset = Math.max(start_offset - 1, 0)
     var future_dates = []
+    date = new Date(date)
+    // TODO: Why do I need this?
+    date.setDate(date.getDate() + 1)
     for (var i = 0; i < max_shift; i++) {
-        future_dates.push('+' + (i+1))
+        date.setDate(date.getDate() + 1)
+        future_dates.push((1900 + date.getYear()) + "-" + (1 + date.getMonth()) + "-" + date.getDate())
     }
     for (var trace of traces) {
         trace.y = trace.y.slice(start_offset, trace.y.length)
         trace.x = trace.x.slice(start_offset, trace.x.length).concat(future_dates)
     }
 
-    if (data.options.scale == scale.LOG) {
+    if (options.scale == scale.LOG) {
         layout.yaxis.type = 'log'
     }
-    if (data.options.daily) {
+    if (options.daily) {
         layout.yaxis.title += ' (daily '
     } else {
         layout.yaxis.title += ' (cumulative '
     }
-    switch (data.options.data_per) {
+    switch (options.data_per) {
         case data_per.ABSOLUTE:
             layout.yaxis.title += 'number)'
             break;
@@ -850,7 +672,7 @@ function updateGraph()
 function updateUrl()
 {
     var parts = []
-    switch (data.options.data_set) {
+    switch (options.data_set) {
         case data_set.ACTIVE:
             parts.push("act")
             break
@@ -863,7 +685,7 @@ function updateUrl()
             parts.push("rec")
             break
     }
-    switch (data.options.data_per) {
+    switch (options.data_per) {
         case data_per.ABSOLUTE:
             break
         case data_per.CAPITA:
@@ -873,19 +695,19 @@ function updateUrl()
             parts.push("bed")
             break
     }
-    switch (data.options.scale) {
+    switch (options.scale) {
         case scale.LINEAR:
             break
         case scale.LOG:
             parts.push("log")
     }
-    if (data.options.daily) {
+    if (options.daily) {
         parts.push("dly")
     }
 
-    for (var id in data.selected) {
-        if (data.selected[id] != 0) {
-            parts.push(id + data.selected[id])
+    for (var id in options.selected) {
+        if (options.selected[id] != 0) {
+            parts.push(id + options.selected[id])
         } else {
             parts.push(id)
         }
@@ -908,38 +730,57 @@ function parseUrl()
         var re = new RegExp('([-A-Za-z]+)(-?[0-9]*)')
         var match = re.exec(part)
         if (part == "") {
-        } else if (match && match[1] in data.regions) {
-            data.selected[match[1]] = parseInt(match[2]) || 0
+        } else if (match && match[1] in regions) {
+            options.selected[match[1]] = parseInt(match[2]) || 0
         } else if (part == "act") {
-            data.options.data_set = data_set.ACTIVE
+            options.data_set = data_set.ACTIVE
         } else if (part == "dth") {
-            data.options.data_set = data_set.DEATHS
+            options.data_set = data_set.DEATHS
         } else if (part == "rec") {
-            data.options.data_set = data_set.RECOVERED
+            options.data_set = data_set.RECOVERED
         } else if (part == "rel") {
-            data.options.data_per = data_per.CAPITA
+            options.data_per = data_per.CAPITA
         } else if (part == "bed") {
-            data.options.data_per = data_per.BED
+            options.data_per = data_per.BED
         } else if (part == "log") {
-            data.options.scale = scale.LOG
+            options.scale = scale.LOG
         } else if (part == "dly") {
-            data.options.daily = true
+            options.daily = true
         } else {
             console.log("ERROR: Don't know what to do with " + part + " in URL (" + url.hash + ").")
         }
     }
 }
 
-$.when(
-    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"),
-    $.get("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"),
-    $.get("regions.csv"),
-).then(function(confirmed_response, deaths_response, regions_response) {
-    buildData(
-        $.csv.toArrays(confirmed_response[0]),
-        $.csv.toArrays(deaths_response[0]),
-        $.csv.toArrays(regions_response[0])
-    )
+function cleanRegions()
+{
+    // Make sure that each sequence we have contains every date we have.
+    var all_dates = {}
+    for (var code in regions) {
+        var region = regions[code]
+        for (var t in region.data) {
+            for (var d in region.data[t]) {
+                all_dates[d] = true
+            }
+        }
+    }
+
+    for (var code in regions) {
+        var region = regions[code]
+        for (var t in region.data) {
+            for (var d in all_dates) {
+                if (!(d in region.data[t])) {
+                    region.data[t][d] = 0
+                }
+            }
+        }
+    }
+}
+
+$.get("outbreak.json", function(data) {
+    regions = data
+    cleanRegions()
+
     parseUrl()
     updateFocus()
     updateRegions()
@@ -958,4 +799,4 @@ $.when(
         $(".controlgroup").controlgroup()
         $(".controlgroup-vertical").controlgroup({ "direction": "vertical" });
     })
-});
+})
