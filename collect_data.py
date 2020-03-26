@@ -65,7 +65,13 @@ def shorten(country_name):
 class Collector(object):
     def __init__(self):
         # Area Of Interest
-        self.aoi = {}
+        self.aoi = {
+            'XKX': {
+                'name': 'Kosovo',
+                'region': 'Europe',
+                'population': 1831000,
+                'hospital_beds': 5269}
+        }
         # country -> state -> county -> city
         # At each level there may be _data -> t -> d -> number
         self.area_tree = {}
@@ -139,7 +145,8 @@ class Collector(object):
 
         # Now do a second pass, filling in missing data by summing up all the child nodes.
         for code in self.aoi:
-            self.aoi[code]['name'] = self.aoi[code]['path'][-1]
+            if 'name' not in self.aoi[code]:
+                self.aoi[code]['name'] = self.aoi[code]['path'][-1]
             if code.startswith('US-'):
                 self.aoi[code]['region'] = "US State"
             for t in self.aoi[code]['data']:
@@ -177,7 +184,7 @@ class Collector(object):
     def hospital_beds(self):
         for entry in read_csv(open("data/API_SH.MED.BEDS.ZS_DS2_en_csv_v2_821439.csv"), skip=4):
             code = entry['Country Code']
-            if code not in self.aoi:
+            if code not in self.aoi or 'hospital_beds' in self.aoi[code]:
                 continue
             for year in range(2020, 2000, -1):
                 if entry.get(str(year)):
