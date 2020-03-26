@@ -774,9 +774,12 @@ function cleanRegions()
     for (var code in regions) {
         var region = regions[code]
         for (var t in region.data) {
+            var last = 0
             for (var d in all_dates) {
-                if (!(d in region.data[t])) {
-                    region.data[t][d] = 0
+                if (d in region.data[t]) {
+                    last = region.data[t][d]
+                } else {
+                    region.data[t][d] = last
                 }
             }
         }

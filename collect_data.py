@@ -127,20 +127,20 @@ class Collector(object):
 
                 self.aoi[code].setdefault('data', {})
                 for t in ('cases', 'deaths', 'recovered'):
-
-                    try:
-                        node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])
-                    except ValueError:
-                        pass
-
-                    if pure:
+                    if len(entry[t]):
                         try:
-                            self.aoi[code]['data'].setdefault(t, {})[entry['date']] = int(entry[t])
+                            node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])
                         except ValueError:
                             pass
-                    else:
-                        # Mark this as one we need to fill in later.
-                        self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
+
+                        if pure:
+                            try:
+                                self.aoi[code]['data'].setdefault(t, {})[entry['date']] = int(entry[t])
+                            except ValueError:
+                                pass
+                        else:
+                            # Mark this as one we need to fill in later.
+                            self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
 
         # Now do a second pass, filling in missing data by summing up all the child nodes.
         for code in self.aoi:
