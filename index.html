@@ -34,10 +34,14 @@ description: Graph of COVID-19 spread in different countries and US states.
                 <tr>
                     <td style="vertical-align:top">
                         <div class="controlgroup-vertical">
+                        <input type="radio" id="active" name="stat" onclick="doChangeOptions()" />
+                        <label for="active">Active</label>
                         <input type="radio" id="confirmed" name="stat" onclick="doChangeOptions()" />
                         <label for="confirmed">Confirmed</label>
                         <input type="radio" id="deaths" name="stat" onclick="doChangeOptions()" />
                         <label for="deaths">Deaths</label>
+                        <input type="radio" id="recovered" name="stat" onclick="doChangeOptions()" />
+                        <label for="recovered">Recovered</label>
                         </div>
                     </td><td style="vertical-align:top">
                         <div class="controlgroup-vertical">

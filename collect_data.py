@@ -7,7 +7,6 @@ import io
 import os
 import re
 from pathlib import Path
-import numpy as np
 import copy
 import time
 from pprint import pprint
@@ -127,7 +126,7 @@ class Collector(object):
                         pass
 
                 self.aoi[code].setdefault('data', {})
-                for t in ('cases', 'deaths', 'recovered', 'active'):
+                for t in ('cases', 'deaths', 'recovered'):
 
                     try:
                         node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])

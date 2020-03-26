@@ -1,5 +1,5 @@
 "use strict"
-
+// 
 /*
  * When the user clicks a button, call a do* function that indicates what the
  * user wants to happen.  That function updates internal state. Then it calls
@@ -230,7 +230,6 @@ function select(id, shift)
 
 function deselect(id)
 {
-    console.log("deselect", id)
     delete options.selected[id]
     var checkbox = document.getElementById(id)
     checkbox = $("#" + id)
@@ -254,7 +253,6 @@ function updateMatches()
     var region = regions[focus]
 
     var matches = findMatches(focus)
-    console.log(matches)
 
     var div = document.getElementById("matches")
     div.innerHTML = ""
@@ -481,14 +479,18 @@ function makeTrace(id)
         marker_color: region.color
     };
     trace.y = []
+    var data = regions[id].data
     for (var d of trace.x) {
-        trace.y.push(region.data[cases][d])
-    }
-    if (cases_active) {
-        for (var i = 0; i < trace.y.length; i++) {
-            trace.y[i] -= data.deaths[id][i]
-            trace.y[i] -= data.recovered[id][i]
+        var value = data[cases][d]
+        if (cases_active) {
+            if ('deaths' in data) {
+                value -= data['deaths'][d]
+            }
+            if ('recovered' in data) {
+                value -= data['recovered'][d]
+            }
         }
+        trace.y.push(value)
     }
 
     if (options.data_per == data_per.CAPITA) {
@@ -515,8 +517,12 @@ function makeTrace(id)
 
 function doChangeOptions()
 {
-    if (document.getElementById("deaths").checked) {
+    if (document.getElementById("active").checked) {
+        options.data_set = data_set.ACTIVE
+    } else if (document.getElementById("deaths").checked) {
         options.data_set = data_set.DEATHS
+    } else if (document.getElementById("recovered").checked) {
+        options.data_set = data_set.RECOVERED
     } else {
         options.data_set = data_set.CONFIRMED
     }
