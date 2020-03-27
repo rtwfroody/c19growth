@@ -210,12 +210,48 @@ class Collector(object):
                 hospital_beds = int(td[2].text.replace(",", ""))
                 self.aoi[code]['hospital_beds'] = hospital_beds
 
+    def measure(self):
+        """Compute some metrics that give an idea of how well each area is doing."""
+        window = 4
+        for aoi in self.aoi.values():
+            if 'population' not in aoi:
+                print("No population info for", aoi['name'])
+                continue
+            if 'cases' not in aoi['data']:
+                print("No cases for", aoi['name'])
+                continue
+            distance = []
+            size = 4
+            values = [v for k, v in sorted(aoi['data']['cases'].items())]
+            pop = aoi['population']
+            for i in range(size):
+                if i == 0:
+                    distance.insert(0, sum(values[-window:]) / window / pop)
+                else:
+                    distance.insert(0, sum(values[-window * (i+1):-window * i]) / window / pop)
+            velocity = []
+            for i in range(len(distance)-1):
+                velocity.append(distance[i + 1] - distance[i])
+            acceleration = []
+            for i in range(len(velocity)-1):
+                acceleration.append(velocity[i + 1] - velocity[i])
+            jerk = []
+            for i in range(len(acceleration)-1):
+                jerk.append(acceleration[i + 1] - acceleration[i])
+
+            print(aoi['name'], distance, velocity, acceleration, jerk)
+
+            aoi['velocity'] = velocity[-1]
+            aoi['acceleration'] = acceleration[-1]
+            aoi['jerk'] = jerk[-1]
+
     def build(self):
         self.timeseries()
         self.all_csv()
         self.population()
         self.hospital_beds()
         self.state_hospital_beds()
+        self.measure()
 
 def main(args):
     from argparse import ArgumentParser

@@ -3,7 +3,7 @@ title: Confirmed COVID-19 Cases Over Time
 customcss: wide.css
 skipjquery: true
 keywords: covid19 graphs coronavirus
-date: 2020-03-25
+date: 2020-03-27
 description: Graph of COVID-19 spread in different countries and US states.
 ---
 <link rel="stylesheet" href="growth.css">
@@ -129,8 +129,12 @@ description: Graph of COVID-19 spread in different countries and US states.
 
 <h2>Updates</h2>
 <p>
-March 25: The Johns Hopkins data source changed, and now no longer reports data on US states, nor recovered counts. They say they will start reporting US states again, and possible will start reporting testing numbers.
-March 23: Add daily feature. You can see daily cases etc. The data tends to be very messy, but in a bar graph you can still make out trends.
+March 27: Experimental feature to show you at a glance how regions are doing. Red is bad. Blue is good.
+The first square is how many new cases there have been recently. Second is whether the rate of new cases
+is increasing or decreasing. Third is how that rate is doing. All normalized for population.<br/>
+March 26: Switched to <a href="https://github.com/CSSEGISandData/COVID-19">Corona Data Scraper</a> data source, which is hopefully more reliable.</br>
+March 25: The Johns Hopkins data source changed, and now no longer reports data on US states, nor recovered counts. They say they will start reporting US states again, and possible will start reporting testing numbers.<br/>
+March 23: Add daily feature. You can see daily cases etc. The data tends to be very messy, but in a bar graph you can still make out trends.<br/>
 March 21: UI update: Select countries you're interested in on the bottom left. Adjust the shift (or remove) in the bottom middle. The bottom right contains close matches for the graph you're looking at.<br/>
 March 16: You can now add shifted lines to compare countries where the outbreak
 started at different times.<br/>

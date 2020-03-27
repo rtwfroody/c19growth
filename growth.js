@@ -50,6 +50,19 @@ function* color_generator()
 }
 var colorgen = color_generator()
 
+function color_fade(type, start, end, percentage)
+{
+    var color = []
+    for (var i = 0; i < 3; i++) {
+        color.push(Math.round((start[i] * percentage + end[i] * (100 - percentage)) / 100))
+    }
+    if (type == "hsl") {
+        return "hsl(" + color[0] + "," + color[1] + "%," + color[2] + "%)"
+    } else {
+        return "rgb(" + color.join(",") + ")"
+    }
+}
+
 function add_label(element, id, label) {
     var l = document.createElement('label');
     l.setAttribute('for', id)
@@ -87,22 +100,6 @@ function doFocus(id)
 {
     focus = id
     updateMatches()
-}
-
-function updateSelection(group, subgroup, value)
-{
-    var grouped = {}
-
-    for (var id in regions) {
-        var region = regions[id]
-        if (group != region.group) {
-            continue
-        }
-        if (subgroup == "all" || subgroup == region.subgroup) {
-            var button = document.getElementById(id);
-            button.checked = value
-        }
-    }
 }
 
 function openOptions()
@@ -276,7 +273,7 @@ function updateMatches()
             input.setAttribute("type", "checkbox");
             input.setAttribute("class", "match");
             input.setAttribute("id", match_id + shift);
-            if (data.selected[match_id] == shift) {
+            if (options.selected[match_id] == shift) {
                 input.setAttribute("checked", true)
             }
             input.setAttribute("onClick", 'doToggleSequence("' + match_id + '", ' + shift + ')')
@@ -385,7 +382,7 @@ function updateRegions()
                 var table = document.createElement("table")
                 div.appendChild(table)
 
-                subgroups[region.subgroup] = div
+                subgroups[region.region] = div
 
                 var li = document.createElement("li")
                 var a = document.createElement("a")
@@ -398,7 +395,7 @@ function updateRegions()
             }
 
             var tr = document.createElement("tr")
-            tr.setAttribute("onClick", 'doToggle("' + region.id + '")')
+            tr.setAttribute("onClick", 'doToggle("' + id + '")')
 
             var input = document.createElement('input');
             input.setAttribute("type", "checkbox");
@@ -416,18 +413,34 @@ function updateRegions()
             tr.appendChild(td)
 
             var td = document.createElement("td")
-            td.innerHTML = data.confirmed[region.id].velocity
+            var p = Math.min(100, Math.max(100.0 * region.velocity / 0.0001, 0))
+            td.setAttribute("style", "width:2em;background:" + color_fade("hsl",
+                [360, 100, 50], [360, 100, 100], p))
             tr.appendChild(td)
 
             var td = document.createElement("td")
-            td.innerHTML = data.confirmed[region.id].acceleration
+            var p = Math.min(100, Math.max(100.0 * region.acceleration / 0.0001, -100))
+            if (p > 0) {
+                td.setAttribute("style", "width:2em;background:" + color_fade("hsl",
+                    [360, 100, 50], [360, 100, 100], p))
+            } else {
+                td.setAttribute("style", "width:2em;background:" + color_fade("hsl",
+                    [210, 100, 50], [210, 100, 100], -p))
+            }
             tr.appendChild(td)
 
             var td = document.createElement("td")
-            td.innerHTML = data.confirmed[region.id].jerk
+            var p = Math.min(100, Math.max(100.0 * region.jerk / 0.0001, -100))
+            if (p > 0) {
+                td.setAttribute("style", "width:2em;background:" + color_fade("hsl",
+                    [360, 100, 50], [360, 100, 100], p))
+            } else {
+                td.setAttribute("style", "width:2em;background:" + color_fade("hsl",
+                    [210, 100, 50], [210, 100, 100], -p))
+            }
             tr.appendChild(td)
 
-            subgroups[region.subgroup].appendChild(tr)
+            subgroups[region.region].appendChild(tr)
 
             if (id == focus) {
                 active_tab = subgroups[region.region].getAttribute("n")
