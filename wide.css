@@ -203,6 +203,12 @@ h6{
     font-size:1em;
     font-family:Athelas,STHeiti,Microsoft Yahei,serif
 }
+.post .post-content a{
+    color:#c05b4d
+}
+.post .post-content a:hover{
+    border-bottom:1px solid #c05b4d
+}
 .container{
     margin:0 auto;
     width:100%
