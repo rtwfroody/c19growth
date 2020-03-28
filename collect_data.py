@@ -32,6 +32,68 @@ def read_csv(f, has_header=True, skip=0):
         data.append(entry)
     return data
 
+state_name = {
+	'AL': 'Alabama',
+	'AK': 'Alaska',
+	'AZ': 'Arizona',
+	'AR': 'Arkansas',
+	'CA': 'California',
+	'CO': 'Colorado',
+	'CT': 'Connecticut',
+	'DE': 'Delaware',
+	'FL': 'Florida',
+	'GA': 'Georgia',
+	'HI': 'Hawaii',
+	'ID': 'Idaho',
+	'IL': 'Illinois',
+	'IN': 'Indiana',
+	'IA': 'Iowa',
+	'KS': 'Kansas',
+	'KY': 'Kentucky',
+	'LA': 'Louisiana',
+	'ME': 'Maine',
+	'MD': 'Maryland',
+	'MA': 'Massachusetts',
+	'MI': 'Michigan',
+	'MN': 'Minnesota',
+	'MS': 'Mississippi',
+	'MO': 'Missouri',
+	'MT': 'Montana',
+	'NE': 'Nebraska',
+	'NV': 'Nevada',
+	'NH': 'New Hampshire',
+	'NJ': 'New Jersey',
+	'NM': 'New Mexico',
+	'NY': 'New York',
+	'NC': 'North Carolina',
+	'ND': 'North Dakota',
+	'OH': 'Ohio',
+	'OK': 'Oklahoma',
+	'OR': 'Oregon',
+	'PA': 'Pennsylvania',
+	'RI': 'Rhode Island',
+	'SC': 'South Carolina',
+	'SD': 'South Dakota',
+	'TN': 'Tennessee',
+	'TX': 'Texas',
+	'UT': 'Utah',
+	'VT': 'Vermont',
+	'VA': 'Virginia',
+	'WA': 'Washington',
+	'WV': 'West Virginia',
+	'WI': 'Wisconsin',
+	'WY': 'Wyoming',
+	'AS': 'American Samoa',
+	'DC': 'District of Columbia',
+	'FM': 'Federated States of Micronesia',
+	'GU': 'Guam',
+	'MH': 'Marshall Islands',
+	'MP': 'Northern Mariana Islands',
+	'PW': 'Palau',
+	'PR': 'Puerto Rico',
+	'VI': 'Virgin Islands',
+}
+
 def open_cached(url):
     cache_path = Path(".cache")
     os.makedirs(cache_path, exist_ok=True)
@@ -148,6 +210,7 @@ class Collector(object):
                 self.aoi[code]['name'] = self.aoi[code]['path'][-1]
             if code.startswith('US-'):
                 self.aoi[code]['region'] = "US State"
+                self.aoi[code]['name'] = state_name[self.aoi[code]['path'][-1]]
             for t in self.aoi[code]['data']:
                 for d in self.aoi[code]['data'][t]:
                     if self.aoi[code]['data'][t][d] is None:
@@ -238,8 +301,6 @@ class Collector(object):
             jerk = []
             for i in range(len(acceleration)-1):
                 jerk.append(acceleration[i + 1] - acceleration[i])
-
-            print(aoi['name'], distance, velocity, acceleration, jerk)
 
             aoi['velocity'] = velocity[-1]
             aoi['acceleration'] = acceleration[-1]
