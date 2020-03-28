@@ -5,3 +5,7 @@
 .regbox {
     display: inline-block;
 }
+
+.ui-widget {
+    font-size: unset
+}
