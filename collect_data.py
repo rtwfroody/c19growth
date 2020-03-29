@@ -136,15 +136,18 @@ class Collector(object):
         # country -> state -> county -> city
         # At each level there may be _data -> t -> d -> number
         self.area_tree = {}
+        self.enable_debug = False
 
-    def add_area(self, country, state, county, city):
+    def add_area(self, path):
         root = self.area_tree
-        for part in (country, state, county, city):
-            if not part:
-                break
-            root = root.setdefault(part, {})
+        for part in path:
+            root = root.setdefault(part, {'_path': path})
 
-    def tally(self, node, t, d):
+    def debug(self, *args):
+        if self.enable_debug:
+            print(*args)
+
+    def tally(self, node, t, d, depth=0):
         data = node.get('_data', {})
         if t in data and d in data[t]:
             return data[t][d]
@@ -152,70 +155,69 @@ class Collector(object):
         for child in node:
             if child.startswith('_'):
                 continue
-            value += self.tally(node[child], t, d)
+            value += self.tally(node[child], t, d, depth + 1)
         return value
 
     def get_node(self, path):
         node = self.area_tree
         for part in path:
-            if not part:
-                break
             node = node[part]
         return node
 
     def timeseries(self):
         for entry in read_csv(open_cached("https://coronadatascraper.com/timeseries.csv")):
-            self.add_area(entry['country'], entry['state'], entry['county'], entry['city'])
             path = (entry['country'], entry['state'], entry['county'], entry['city'])
-            node = self.get_node(path)
+            path = [p for p in path if len(p)]
+            self.add_area(path)
             if entry['country'] == 'USA' and entry['state']:
-                codes = [("US-" + entry['state'], 2)]
+                code = "US-" + entry['state']
+                depth = 2
             else:
-                codes = [(entry['country'], 1)]
-            for code, depth in codes:
-                self.aoi.setdefault(code, {})
-                self.aoi[code]['path'] = path[:depth]
+                code = entry['country']
+                depth = 1
 
-                # If pure is true, then this row contains data for exactly what
-                # we want, and it's not just data for a smaller region that
-                # maybe we have to sum up.
-                pure = len("".join(path[depth:])) == 0
+            node = self.get_node(path)
+            self.enable_debug = (node['_path'] == ["USA", "UT"])
 
-                if pure:
+            self.aoi.setdefault(code, {})
+            self.aoi[code]['path'] = path[:depth]
+
+            # If pure is true, then this row contains data for exactly what
+            # we want, and it's not just data for a smaller region that
+            # maybe we have to sum up.
+            pure = (len(path) == depth)
+
+            if pure:
+                try:
+                    self.aoi[code]['population'] = int(entry['population'])
+                except ValueError:
+                    pass
+
+            self.aoi[code].setdefault('data', {})
+            for t in ('cases', 'deaths', 'recovered'):
+                if len(entry[t]):
                     try:
-                        self.aoi[code]['population'] = int(entry['population'])
+                        node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])
                     except ValueError:
                         pass
 
-                self.aoi[code].setdefault('data', {})
-                for t in ('cases', 'deaths', 'recovered'):
-                    if len(entry[t]):
-                        try:
-                            node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])
-                        except ValueError:
-                            pass
+                    # Mark this as one we need to fill in later.
+                    self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
 
-                        if pure:
-                            try:
-                                self.aoi[code]['data'].setdefault(t, {})[entry['date']] = int(entry[t])
-                            except ValueError:
-                                pass
-                        else:
-                            # Mark this as one we need to fill in later.
-                            self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
+            self.enable_debug = False
 
         # Now do a second pass, filling in missing data by summing up all the child nodes.
-        for code in self.aoi:
+        for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
-                self.aoi[code]['name'] = self.aoi[code]['path'][-1]
+                aoi['name'] = aoi['path'][-1]
             if code.startswith('US-'):
-                self.aoi[code]['region'] = "US State"
-                self.aoi[code]['name'] = state_name[self.aoi[code]['path'][-1]]
-            for t in self.aoi[code]['data']:
-                for d in self.aoi[code]['data'][t]:
-                    if self.aoi[code]['data'][t][d] is None:
-                        node = self.get_node(self.aoi[code]['path'])
-                        self.aoi[code]['data'][t][d] = self.tally(node, t, d)
+                aoi['region'] = "US State"
+                aoi['name'] = state_name[aoi['path'][-1]]
+            for t in aoi['data']:
+                for d in aoi['data'][t]:
+                    if aoi['data'][t][d] is None:
+                        node = self.get_node(aoi['path'])
+                        aoi['data'][t][d] = self.tally(node, t, d)
 
     def save_data(self, path):
         json.dump(self.aoi, open(path, "w"))
