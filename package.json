@@ -1,0 +1,26 @@
+{
+  "name": "covid19",
+  "version": "1.0.0",
+  "description": "Goal: make a tool that helps people determine how bad things are at varoius places around the world.",
+  "main": "growth.js",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react-app": "^3.1.2",
+    "jquery-csv": "^1.0.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rtwfroody/c19growth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rtwfroody/c19growth/issues"
+  },
+  "homepage": "https://github.com/rtwfroody/c19growth#readme"
+}
