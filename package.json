@@ -4,9 +4,12 @@
   "description": "Goal: make a tool that helps people determine how bad things are at varoius places around the world.",
   "main": "growth.js",
   "dependencies": {
+    "@material-ui/core": "^4.9.8",
     "babel-cli": "^6.26.0",
     "babel-preset-react-app": "^3.1.2",
-    "jquery-csv": "^1.0.8"
+    "jquery-csv": "^1.0.8",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   },
   "devDependencies": {},
   "scripts": {

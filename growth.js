@@ -11,7 +11,8 @@ const data_set = {
     ACTIVE: 'active',
     CONFIRMED: 'cases',
     DEATHS: 'deaths',
-    RECOVERED: 'recovered'
+    RECOVERED: 'recovered',
+    TESTED: 'tested'
 }
 
 const data_per = {
@@ -464,6 +465,8 @@ function updateRegions()
         document.getElementById("deaths").checked = true
     } else if (options.data_set == data_set.RECOVERED) {
         document.getElementById("recovered").checked = true
+    } else if (options.data_set == data_set.TESTED) {
+        document.getElementById("tested").checked = true
     } else {
         document.getElementById("confirmed").checked = true
     }
@@ -562,6 +565,8 @@ function doChangeOptions()
         options.data_set = data_set.DEATHS
     } else if (document.getElementById("recovered").checked) {
         options.data_set = data_set.RECOVERED
+    } else if (document.getElementById("tested").checked) {
+        options.data_set = data_set.TESTED
     } else {
         options.data_set = data_set.CONFIRMED
     }
@@ -612,6 +617,10 @@ function updateGraph()
         case data_set.RECOVERED:
             layout.yaxis.title = 'Confirmed Recovered'
             title += "Confirmed COVID-19 Recoveries"
+            break;
+        case data_set.TESTED:
+            layout.yaxis.title = 'Tested'
+            title += "COVID-19 Tested"
             break;
     }
 
@@ -729,6 +738,9 @@ function updateUrl()
         case data_set.RECOVERED:
             parts.push("rec")
             break
+        case data_set.TESTED:
+            parts.push("tst")
+            break
     }
     switch (options.data_per) {
         case data_per.ABSOLUTE:
@@ -783,6 +795,8 @@ function parseUrl()
             options.data_set = data_set.DEATHS
         } else if (part == "rec") {
             options.data_set = data_set.RECOVERED
+        } else if (part == "tst") {
+            options.data_set = data_set.TESTED
         } else if (part == "rel") {
             options.data_per = data_per.CAPITA
         } else if (part == "bed") {

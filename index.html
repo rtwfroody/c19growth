@@ -42,6 +42,8 @@ description: Graph of COVID-19 spread in different countries and US states.
                         <label for="deaths">Deaths</label>
                         <input type="radio" id="recovered" name="stat" onclick="doChangeOptions()" />
                         <label for="recovered">Recovered</label>
+                        <input type="radio" id="tested" name="stat" onclick="doChangeOptions()" />
+                        <label for="tested">Tested</label>
                         </div>
                     </td><td style="vertical-align:top">
                         <div class="controlgroup-vertical">
@@ -130,6 +132,7 @@ description: Graph of COVID-19 spread in different countries and US states.
 
 <h2>Updates</h2>
 <p>
+March 31: Added tested data, although it's not populated for many regions. Ones that do work are e.g. USA, Australia, Italy, and several US States.<br />
 March 27: Experimental feature to show you at a glance how regions are doing. Red is bad. Blue is good.
 The first square is how many new cases there have been recently. Second is whether the rate of new cases
 is increasing or decreasing. Third is how that rate is doing. All normalized for population.<br/>

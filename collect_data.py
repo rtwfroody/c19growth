@@ -194,7 +194,7 @@ class Collector(object):
                     pass
 
             self.aoi[code].setdefault('data', {})
-            for t in ('cases', 'deaths', 'recovered'):
+            for t in ('cases', 'deaths', 'recovered', 'tested'):
                 if len(entry[t]):
                     try:
                         node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])
