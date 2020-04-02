@@ -1,29 +1,34 @@
 {
   "name": "covid19",
-  "version": "1.0.0",
-  "description": "Goal: make a tool that helps people determine how bad things are at varoius places around the world.",
-  "main": "growth.js",
-  "dependencies": {
-    "@material-ui/core": "^4.9.8",
-    "babel-cli": "^6.26.0",
-    "babel-preset-react-app": "^3.1.2",
-    "jquery-csv": "^1.0.8",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
-  },
-  "devDependencies": {},
+  "version": "4.0.0",
+  "private": true,
+  "homepage": ".",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rtwfroody/c19growth.git"
+  "dependencies": {
+    "@material-ui/core": "latest",
+    "@material-ui/icons": "^4.9.1",
+    "clsx": "latest",
+    "plotly.js": "^1.52.3",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-plotly.js": "^2.4.0",
+    "react-scripts": "latest"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/rtwfroody/c19growth/issues"
-  },
-  "homepage": "https://github.com/rtwfroody/c19growth#readme"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
