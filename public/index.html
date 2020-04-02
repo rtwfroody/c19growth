@@ -37,16 +37,59 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+<table>
+    <tr>
+        <th style="vertical-align:top;border:3px solid #fff">Data Sources</th>
+        <th style="vertical-align:top;border:3px solid #fff">Other Links</th>
+    </tr>
+    <tr>
+        <td style="vertical-align:top;border:3px solid #fff">
+            <ul>
+                <li><a href="https://coronadatascraper.com/">Corona Data Scraper</a></li>
+                <li><a href="https://data.worldbank.org/indicator/SP.POP.TOTL">Country Population by The World Bank</a></li>
+                <li><a href="https://www.census.gov/data/tables/time-series/demo/popest/2010s-state-total.html">US State Population by US Census</a></li>
+                <li><a href="https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv">Country Names/Continents by Luke Duncalfe</a></li>
+                <li><a href="https://data.worldbank.org/indicator/SH.MED.BEDS.ZS">Country Hospital Beds by The World Bank</a></li>
+                <li><a href="https://www.ahd.com/state_statistics.html">US State Hospital Beds by American Hospital Directory</a></li>
+                <li>X icon By Fabi&aacute;n Alexis - <a
+                       href="https://github.com/fabianalexisinostroza/Antu">GitHub</a>,
+                   CC BY-SA 3.0, <a
+                                     href="https://commons.wikimedia.org/w/index.php?curid=49950930">Wikimedia</a></li>
+            </ul>
+        </td>
+        <td style="vertical-align:top;border:3px solid #fff">
+            <ul>
+                <li><a href="https://www.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6">Coronavirus COVID-19 Global Cases by Johns Hopkins CSSE</a>
+                <li><a href="https://gabgoh.github.io/COVID/index.html">Epidemic Calculator</a></li>
+                <li><a href="https://infection2020.com/">United States Coronavirus (COVID-19) Tracker</a></li>
+                <li><a href="https://covid19.healthdata.org/projections">COVID-19 Projections</a></li>
+            </ul>
+        </td>
+    </tr>
+</table>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+<h2>Updates</h2>
+<p>
+April 1: Rewrote everything to use React. Not quite all features are as they were, but I think all the functionality is there. Hopefully I'll get some real improvements going in the next week, or at least make it look decent. Feedback links are at the very bottom of the page.<br />
+March 31: Added tested data, although it's not populated for many regions. Ones that do work are e.g. USA, Australia, Italy, and several US States.<br />
+March 27: Experimental feature to show you at a glance how regions are doing. Red is bad. Blue is good.
+The first square is how many new cases there have been recently. Second is whether the rate of new cases
+is increasing or decreasing. Third is how that rate is doing. All normalized for population.<br/>
+March 26: Switched to <a href="https://github.com/CSSEGISandData/COVID-19">Corona Data Scraper</a> data source, which is hopefully more reliable.</br>
+March 25: The Johns Hopkins data source changed, and now no longer reports data on US states, nor recovered counts. They say they will start reporting US states again, and possible will start reporting testing numbers.<br/>
+March 23: Add daily feature. You can see daily cases etc. The data tends to be very messy, but in a bar graph you can still make out trends.<br/>
+March 21: UI update: Select countries you're interested in on the bottom left. Adjust the shift (or remove) in the bottom middle. The bottom right contains close matches for the graph you're looking at.<br/>
+March 16: You can now add shifted lines to compare countries where the outbreak
+started at different times.<br/>
+March 14: You can now view "Active" cases, that is confirmed cases minus deaths
+minus recoveries.<br/>
+March 12: Added view of cases per hospital bed. Data came from the <a
+    href="https://data.worldbank.org/indicator/SH.MED.BEDS.ZS">world
+    bank</a>.<br/>
+</p>
+
+
 <footer id="footer" class="footer">
   <p class="icon-links" style="text-align: center;">
 
