@@ -177,14 +177,18 @@ export default class RegionView extends React.Component
 
                       <TableCell>
                         <ArrowLeftIcon color={code in props.selected ? "primary" : "disabled"}
-                          onClick={() => code in props.selected && props.setSelected(code, props.selected[code] - 1)} />
-                        <TextField disabled={!(code in props.selected)}
+                          onClick={() => props.setSelected(code, (props.selected[code] || 0) - 1)} />
+                        <TextField
+                          size="small"
+                          margin="none"
+                          disabled={!(code in props.selected)}
                           value={props.selected[code] || 0}
                           onChange={event => props.setSelected(code, event.target.value)}
+                          onClick={() => props.setSelected(code, (props.selected[code] || 0))}
                           style={{width: "3em"}}
                           />
                         <ArrowRightIcon color={code in props.selected ? "primary" : "disabled"}
-                          onClick={() => code in props.selected && props.setSelected(code, props.selected[code] + 1)} />
+                          onClick={() => props.setSelected(code, (props.selected[code] || 0) + 1)} />
                       </TableCell>
                     </TableRow>
                   ))}
