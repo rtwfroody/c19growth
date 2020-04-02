@@ -10,16 +10,19 @@ PUBLISH=\
 	collect_data.py \
 	data
 
-build:
+dobuild:
 	npm run build
 
-push:	all
-	rsync --progress -az $(PUBLISH) relax.casualhacker.net:/home/tnewsome/www-hugo/content/covid19/
+push:	dobuild outbreak.json
+	rsync --progress -az --delete \
+	    build/ \
+	    outbreak.json \
+	    relax.casualhacker.net:/home/tnewsome/www-hugo/content/covid19/
 
 publish:	push
 	ssh relax.casualhacker.net make -C www-hugo
 
-c19:	build outbreak.json
+c19:	dobuild outbreak.json
 	rsync --progress -az --delete \
 	    build/ \
 	    outbreak.json \
