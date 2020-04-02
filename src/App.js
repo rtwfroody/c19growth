@@ -199,12 +199,14 @@ class Dashboard extends React.Component
           </Grid>
 
           <Grid item xs={12}>
+            <Paper>
               <Options
                 daily={this.state.daily} setDaily={(e) => this.setDaily(e)}
                 scale={this.state.scale} setScale={(e) => this.setScale(e)}
                 data_set={this.state.data_set} setDataSet={(e) => this.setDataSet(e)}
                 data_per={this.state.data_per} setDataPer={(e) => this.setDataPer(e)}
               />
+            </Paper>
           </Grid>
 
           <Grid item sm={9}>
