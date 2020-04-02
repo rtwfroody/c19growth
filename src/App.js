@@ -238,15 +238,12 @@ class Dashboard extends React.Component
       .then(response => response.json())
       .then(aoi => cleanAoi(aoi))
       .then(result => {
-        this.setState({ aoi: result, loading: false })
-
         var url = new URL(window.location)
 
         if (url.hash === "") {
           url.hash = "USA"
         }
 
-        let selected = this.state.selected
         for (var part of url.hash.slice(1).split(";")) {
           var re = new RegExp('([-A-Za-z]+)(-?[0-9]*)')
           var match = re.exec(part)
@@ -274,7 +271,7 @@ class Dashboard extends React.Component
           }
         }
 
-        this.setState({selected: selected})
+        this.setState({ aoi: result, loading: false })
       })
       .catch(e => {
         console.log(e)
