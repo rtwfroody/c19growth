@@ -56,6 +56,9 @@ function UpdateUrl(props) {
     case data_set.TESTED:
       parts.push("tst")
       break
+    default:
+      console.assert(0)
+      break
   }
   switch (props.data_per) {
     case data_per.ABSOLUTE:
@@ -66,12 +69,19 @@ function UpdateUrl(props) {
     case data_per.BED:
       parts.push("bed")
       break
+    default:
+      console.assert(0)
+      break
   }
   switch (props.scale) {
     case scale.LINEAR:
       break
     case scale.LOG:
       parts.push("log")
+      break
+    default:
+      console.assert(0)
+      break
   }
   if (props.daily) {
     parts.push("dly")

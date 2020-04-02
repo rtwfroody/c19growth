@@ -143,12 +143,12 @@ export default class RegionView extends React.Component
           scrollButtons="auto"
         >
           {Object.keys(tabs).sort().map((region, index) => (
-            <Tab label={region} {...a11yProps(index)} />
+            <Tab key={region} label={region} {...a11yProps(index)} />
           ))}
         </Tabs>
 
         {Object.keys(tabs).sort().map((region, index) => (
-          <TabPanel value={this.state.tabRegion} index={index}>
+          <TabPanel key={region} value={this.state.tabRegion} index={index}>
             <Table size="small">
               <TableHead>
                 <TableRow>

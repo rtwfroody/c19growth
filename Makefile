@@ -13,7 +13,10 @@ PUBLISH=\
 dobuild:
 	npm run build
 
-push:	dobuild outbreak.json
+docollect:
+	python3 collect_data.py
+
+push:	dobuild docollect
 	rsync --progress -az --delete \
 	    build/ \
 	    outbreak.json \
