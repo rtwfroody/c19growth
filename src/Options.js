@@ -18,6 +18,7 @@ export default class Options extends React.Component
                     <MenuItem value={false}>Cumulative</MenuItem>
                     <MenuItem value={true}>Daily</MenuItem>
                 </Select>
+                &nbsp;
                 <Select
                     value={this.props.data_set}
                     onChange={this.props.setDataSet}
@@ -28,6 +29,7 @@ export default class Options extends React.Component
                     <MenuItem value={data_set.RECOVERED}>Recoveries</MenuItem>
                     <MenuItem value={data_set.TESTED}>Tested</MenuItem>
                 </Select>
+                &nbsp;
                 <Select
                     value={this.props.data_per}
                     onChange={this.props.setDataPer}
@@ -36,7 +38,9 @@ export default class Options extends React.Component
                     <MenuItem value={data_per.CAPITA}>per Capita</MenuItem>
                     <MenuItem value={data_per.BED}>per Hospital Bed</MenuItem>
                 </Select>
+                &nbsp;
                     using a
+                &nbsp;
                 <Select
                     value={this.props.scale}
                     onChange={this.props.setScale}
