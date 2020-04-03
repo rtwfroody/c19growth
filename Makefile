@@ -1,12 +1,5 @@
 PUBLISH=\
-	index.html \
-	growth.css \
-	growth.js \
-	node_modules \
-	wide.css \
-	jquery-ui-1.12.1.custom \
-	Antu_task-reject.svg \
-	outbreak.json \
+	build/ \
 	collect_data.py \
 	data
 
@@ -14,12 +7,11 @@ dobuild:
 	npm run build
 
 docollect:
-	python3 collect_data.py
+	python3 collect_data.py -o public/outbreak.json
 
 push:	dobuild docollect
 	rsync --progress -az --delete \
-	    build/ \
-	    outbreak.json \
+	    $(PUBLISH) \
 	    relax.casualhacker.net:/home/tnewsome/www-hugo/content/covid19/
 
 publish:	push
@@ -27,8 +19,7 @@ publish:	push
 
 c19:	dobuild outbreak.json
 	rsync --progress -az --delete \
-	    build/ \
-	    outbreak.json \
+	    $(PUBLISH) \
 	    relax.casualhacker.net:/home/tnewsome/www-hugo/content/c19/ && \
 	ssh relax.casualhacker.net make -C www-hugo
 

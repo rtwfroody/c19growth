@@ -93,6 +93,7 @@ state_name = {
 	'PR': 'Puerto Rico',
 	'VI': 'Virgin Islands',
 }
+state_short = {short: lng for lng, short in state_name.items()}
 
 def open_cached(url):
     cache_path = Path(".cache")
@@ -169,15 +170,18 @@ class Collector(object):
             path = (entry['country'], entry['state'], entry['county'], entry['city'])
             path = [p for p in path if len(p)]
             self.add_area(path)
+            translate_country = {
+                'United States': 'USA'
+            }
+            entry['country'] = translate_country.get(entry['country'], entry['country'])
             if entry['country'] == 'USA' and entry['state']:
-                code = "US-" + entry['state']
+                code = "US-" + state_short.get(entry['state'], entry['state'])
                 depth = 2
             else:
                 code = entry['country']
                 depth = 1
 
             node = self.get_node(path)
-            self.enable_debug = (node['_path'] == ["USA", "UT"])
 
             self.aoi.setdefault(code, {})
             self.aoi[code]['path'] = path[:depth]
@@ -204,15 +208,13 @@ class Collector(object):
                     # Mark this as one we need to fill in later.
                     self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
 
-            self.enable_debug = False
-
         # Now do a second pass, filling in missing data by summing up all the child nodes.
         for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
                 aoi['name'] = aoi['path'][-1]
             if code.startswith('US-'):
                 aoi['region'] = "US State"
-                aoi['name'] = state_name[aoi['path'][-1]]
+                aoi['name'] = state_name.get(aoi['path'][-1], aoi['path'][-1])
             for t in aoi['data']:
                 for d in aoi['data'][t]:
                     if aoi['data'][t][d] is None:
@@ -319,11 +321,12 @@ class Collector(object):
 def main(args):
     from argparse import ArgumentParser
     parser = ArgumentParser()
+    parser.add_argument("--output", "-o")
     args = parser.parse_args(args)
 
     c = Collector()
     c.build()
-    c.save_data("outbreak.json")
+    c.save_data(args.output or "outbreak.json")
 
 if __name__ == "__main__":
     import sys
