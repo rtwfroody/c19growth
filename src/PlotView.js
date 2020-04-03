@@ -9,19 +9,48 @@ import {makeTrace} from './helpers.js';
 
 function* color_generator()
 {
+    // From https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors/4382138#4382138
+    const kelly_colors_hex = [
+        '#FFB300', //Vivid Yellow
+        '#803E75', //Strong Purple
+        '#FF6800', //Vivid Orange
+        '#A6BDD7', //Very Light Blue
+        '#C10020', //Vivid Red
+        '#CEA262', //Grayish Yellow
+        '#817066', //Medium Gray
+
+        //The following don't work well for people with defective color vision
+        '#007D34', //Vivid Green
+        '#F6768E', //Strong Purplish Pink
+        '#00538A', //Strong Blue
+        '#FF7A5C', //Strong Yellowish Pink
+        '#53377A', //Strong Violet
+        '#FF8E00', //Vivid Orange Yellow
+        '#B32851', //Strong Purplish Red
+        '#F4C800', //Vivid Greenish Yellow
+        '#7F180D', //Strong Reddish Brown
+        '#93AA00', //Vivid Yellowish Green
+        '#593315', //Deep Yellowish Brown
+        '#F13A13', //Vivid Reddish Orange
+        '#232C16', //Dark Olive Green
+    ]
+
     // From https://stackoverflow.com/a/44727682
+    /*
+    const plotly_colors = ['#1f77b4',  // muted blue
+        '#ff7f0e',  // safety orange
+        '#2ca02c',  // cooked asparagus green
+        '#d62728',  // brick red
+        '#9467bd',  // muted purple
+        '#8c564b',  // chestnut brown
+        '#e377c2',  // raspberry yogurt pink
+        '#7f7f7f',  // middle gray
+        '#bcbd22',  // curry yellow - green
+        '#17becf'  // blue - teal
+    ]
+    */
     while (1) {
-        for (const color of ['#1f77b4',  // muted blue
-            '#ff7f0e',  // safety orange
-            '#2ca02c',  // cooked asparagus green
-            '#d62728',  // brick red
-            '#9467bd',  // muted purple
-            '#8c564b',  // chestnut brown
-            '#e377c2',  // raspberry yogurt pink
-            '#7f7f7f',  // middle gray
-            '#bcbd22',  // curry yellow - green
-            '#17becf'  // blue - teal
-        ]) {
+        for (const color of kelly_colors_hex) {
             yield color
         }
     }
