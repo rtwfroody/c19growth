@@ -1,3 +1,5 @@
+import memoize from "memoizee"
+
 import React from 'react';
 
 import Checkbox from '@material-ui/core/Checkbox';
@@ -8,7 +10,9 @@ import TableRow from '@material-ui/core/TableRow';
 
 import {makeTrace} from './helpers.js';
 
-function findMatches(aoi, target_code, data_set, data_per)
+
+var findMatches = memoize(
+function (aoi, target_code, data_set, data_per)
 {
     const target_trace = makeTrace(aoi[target_code], data_set, data_per, false)[2]
     if (!target_trace) {
@@ -59,7 +63,7 @@ function findMatches(aoi, target_code, data_set, data_per)
         }
     }
     return unique_results
-}
+}, {maxAge: 30 * 60 * 1000})
 
 export default class MatchView extends React.Component
 {
