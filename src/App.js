@@ -156,7 +156,10 @@ class Dashboard extends React.Component
   render() {
     if (this.state.loading) {
       return (
-        <div><p>Loading data...</p></div>
+        <div>
+          <h2>Loading data...</h2>
+          <div class="loader"></div>
+        </div>
       )
     }
 
