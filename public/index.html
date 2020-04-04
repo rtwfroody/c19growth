@@ -44,9 +44,13 @@
           border-top: 16px solid #3498db;
           /* Blue */
           border-radius: 50%;
-          width: 50vw;
-          height: 50vw;
           animation: spin 2s linear infinite;
+
+          width: 50vw;
+          height: 50vw
+        }
+        @media only screen and (orientation: landscape) {
+          .loader { width: 50vh; height: 50vh }
         }
 
         @keyframes spin {
