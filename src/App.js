@@ -158,7 +158,7 @@ class Dashboard extends React.Component
       return (
         <div>
           <h2>Loading data...</h2>
-          <div class="loader"></div>
+          <div className="loader"></div>
         </div>
       )
     }
