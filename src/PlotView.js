@@ -68,7 +68,8 @@ export default class PlotView extends React.Component
         let traces = []
 
         let layout = {
-            yaxis: {title: ""}
+            yaxis: {title: ""},
+            margin: {t:25, l:60, b:50}
         }
 
         if (this.props.daily) {
