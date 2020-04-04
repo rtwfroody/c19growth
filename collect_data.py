@@ -12,25 +12,7 @@ import time
 from pprint import pprint
 import json
 import collections
-
-def read_csv(f, has_header=True, skip=0):
-    reader = csv.reader(f)
-    for i in range(skip):
-        next(reader)
-    if has_header:
-        header = next(reader)
-    else:
-        header = None
-    data = []
-    for row in reader:
-        if not header:
-            header = range(len(row))
-        entry = {'_': row}
-        for i, field in enumerate(header):
-            assert (i < len(row)), row
-            entry[field] = row[i]
-        data.append(entry)
-    return data
+from bidict import bidict
 
 state_name = {
 	'AL': 'Alabama',
@@ -84,16 +66,66 @@ state_name = {
 	'WI': 'Wisconsin',
 	'WY': 'Wyoming',
 	'AS': 'American Samoa',
-	'DC': 'District of Columbia',
+	'DC': 'Washington, D.C.',
 	'FM': 'Federated States of Micronesia',
 	'GU': 'Guam',
 	'MH': 'Marshall Islands',
 	'MP': 'Northern Mariana Islands',
 	'PW': 'Palau',
 	'PR': 'Puerto Rico',
-	'VI': 'Virgin Islands',
+	'VI': 'United States Virgin Islands',
 }
 state_short = {short: lng for lng, short in state_name.items()}
+
+part_code_dict = bidict()
+def generate_acronym(word, length):
+    if len(word) <= length:
+        yield word.upper()
+        i = 0
+        while True:
+            yield(word + str(i)).upper()
+
+    for i in range(len(word) - length):
+        if length == 1:
+            yield word[i].upper()
+        else:
+            for tail in generate_acronym(word[i+1:], length - 1):
+                yield word[i].upper() + tail
+
+def make_code(path):
+    if path[0] == 'USA' and len(path) == 2:
+        # For backwards compatiblity with old URLs.
+        return "US-" + state_short[path[1]]
+
+    text = "".join(path).lower()
+    text = re.sub(r'\W', '', text)
+    if text in part_code_dict:
+        return part_code_dict[text]
+
+    for code in generate_acronym(text, 5):
+        if code not in part_code_dict.inverse:
+            part_code_dict[text] = code
+            return code
+    assert(0, "Couldn't generate code for %r." % text)
+
+def read_csv(f, has_header=True, skip=0):
+    reader = csv.reader(f)
+    for i in range(skip):
+        next(reader)
+    if has_header:
+        header = next(reader)
+    else:
+        header = None
+    data = []
+    for row in reader:
+        if not header:
+            header = range(len(row))
+        entry = {'_': row}
+        for i, field in enumerate(header):
+            assert (i < len(row)), row
+            entry[field] = row[i]
+        data.append(entry)
+    return data
 
 def open_cached(url):
     cache_path = Path(".cache")
@@ -130,7 +162,6 @@ class Collector(object):
         self.aoi = {
             'XKX': {
                 'name': 'Kosovo',
-                'region': 'Europe',
                 'population': 1831000,
                 'hospital_beds': 5269}
         }
@@ -138,6 +169,7 @@ class Collector(object):
         # At each level there may be _data -> t -> d -> number
         self.area_tree = {}
         self.enable_debug = False
+        self.alpha3 = {}
 
     def add_area(self, path):
         root = self.area_tree
@@ -167,41 +199,32 @@ class Collector(object):
 
     def timeseries(self):
         for entry in read_csv(open_cached("https://coronadatascraper.com/timeseries.csv")):
-            path = (entry['country'], entry['state'], entry['county'], entry['city'])
-            path = [p for p in path if len(p)]
-            self.add_area(path)
             translate_country = {
                 'United States': 'USA'
             }
             entry['country'] = translate_country.get(entry['country'], entry['country'])
-            if entry['country'] == 'USA' and entry['state']:
-                code = "US-" + state_short.get(entry['state'], entry['state'])
-                depth = 2
-            else:
-                code = entry['country']
-                depth = 1
+            path = (entry['country'], entry['state'], entry['county'], entry['city'])
+            path = [p for p in path if len(p)]
+            self.add_area(path)
+
+            code = make_code(path)
 
             node = self.get_node(path)
 
             self.aoi.setdefault(code, {})
-            self.aoi[code]['path'] = path[:depth]
+            self.aoi[code]['path'] = path
 
-            # If pure is true, then this row contains data for exactly what
-            # we want, and it's not just data for a smaller region that
-            # maybe we have to sum up.
-            pure = (len(path) == depth)
-
-            if pure:
-                try:
-                    self.aoi[code]['population'] = int(entry['population'])
-                except ValueError:
-                    pass
+            try:
+                self.aoi[code]['population'] = int(entry['population'])
+            except ValueError:
+                pass
 
             self.aoi[code].setdefault('data', {})
             for t in ('cases', 'deaths', 'recovered', 'tested'):
                 if len(entry[t]):
                     try:
-                        node.setdefault('_data', {}).setdefault(t, {})[entry['date']] = int(entry[t])
+                        node.setdefault('_data', {}) \
+                                .setdefault(t, {})[entry['date']] = int(entry[t])
                     except ValueError:
                         pass
 
@@ -212,9 +235,13 @@ class Collector(object):
         for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
                 aoi['name'] = aoi['path'][-1]
+            aoi['fullName'] = ", ".join(
+                [self.alpha3.get(aoi['path'][0], aoi['path'][0])] +
+                aoi['path'][1:])
             if code.startswith('US-'):
-                aoi['region'] = "US State"
                 aoi['name'] = state_name.get(aoi['path'][-1], aoi['path'][-1])
+            else:
+                aoi['name'] = self.alpha3.get(aoi['path'][-1], aoi['path'][-1])
             for t in aoi['data']:
                 for d in aoi['data'][t]:
                     if aoi['data'][t][d] is None:
@@ -226,11 +253,7 @@ class Collector(object):
 
     def all_csv(self):
         for entry in read_csv(open("data/all.csv")):
-            code = entry['alpha-3']
-            if code not in self.aoi:
-                continue
-            self.aoi[code]['region'] = entry['region']
-            self.aoi[code]['name'] = shorten(entry['name'])
+            self.alpha3[entry['alpha-3']] = shorten(entry['name'])
 
     def population(self):
         for entry in read_csv(open("data/API_SP.POP.TOTL_DS2_en_csv_v2_821007.csv"), skip=4):
@@ -311,8 +334,8 @@ class Collector(object):
             aoi['jerk'] = jerk[-1]
 
     def build(self):
-        self.timeseries()
         self.all_csv()
+        self.timeseries()
         self.population()
         self.hospital_beds()
         self.state_hospital_beds()

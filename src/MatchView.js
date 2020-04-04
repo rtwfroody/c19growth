@@ -81,7 +81,7 @@ export default class MatchView extends React.Component
 
         return (
             <div>
-                <p>{this.props.aoi[this.props.focus].name} matches:</p>
+                <p>{this.props.aoi[this.props.focus].fullName} matches:</p>
                 <Table size="small">
                 <TableBody>
                 {matches.map((m, i) => (
@@ -92,7 +92,7 @@ export default class MatchView extends React.Component
                       </TableCell>
 
                       <TableCell>
-                        {this.props.aoi[m[1]].name}+{m[2]}
+                        {this.props.aoi[m[1]].fullName}+{m[2]}
                       </TableCell>
 
                     </TableRow>

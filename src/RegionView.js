@@ -9,8 +9,6 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import PropTypes from 'prop-types';
 
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
@@ -47,13 +45,6 @@ TabPanel.propTypes = {
   index: PropTypes.any.isRequired,
   value: PropTypes.any.isRequired,
 };
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
 
 function color_fade(type, start, end, percentage)
 {
@@ -99,7 +90,8 @@ export default class RegionView extends React.Component
   constructor(props) {
     super(props)
     this.state = {
-      tabRegion: 0
+      tabRegion: 0,
+      search: ""
     }
   }
 
@@ -116,86 +108,111 @@ export default class RegionView extends React.Component
     }
   }
 
+  setSearch(value) {
+    this.setState({search: value})
+  }
+
+  matches(code) {
+    const search = this.state.search.toLowerCase()
+    const lowerCode = code.toLowerCase()
+    const fullName = this.props.aoi[code].fullName.toLowerCase()
+    let score = 0
+    for (const part of search.split(/\W+/)) {
+      if (lowerCode.includes(part)) {
+        score += 1
+      } else if (fullName.includes(part)) {
+        score += 2
+      } else {
+        return false
+      }
+    }
+    return score + (1.0 / this.props.aoi[code].population)
+  }
+
   render() {
-    let entries = []
-    for (let key in this.props.aoi) {
-      entries.push(<li>{key}</li>)
-    }
-
-    let tabs = {}
-    for (const code of Object.keys(this.props.aoi)
-      .sort((a, b) => this.props.aoi[a].name > this.props.aoi[b].name ? 1 : -1)) {
-        const aoi = this.props.aoi[code]
-        if (!(aoi.region in tabs)) {
-          tabs[aoi.region] = []
-        }
-        tabs[aoi.region].push(code)
-    }
-
     const props = this.props;
+
+    let matches = []
+    for (const code in props.aoi) {
+      if (code in props.selected) {
+          matches.push([-1, code, props.aoi[code].fullName])
+      } else {
+          const m = this.matches(code)
+          if (m) {
+            matches.push([m, code, props.aoi[code].fullName])
+          }
+      }
+    }
+    matches.sort(function(a, b) {
+        if (a[0] > b[0]) {
+            return 1
+        } else if (a[0] < b[0]) {
+            return -1
+        } else if (a[2] > b[2]) {
+            return 1
+        } else {
+            return -1
+        }
+    })
+    matches = matches.slice(0, 100)
 
     return (
       <div>
-        <Tabs
-          value={this.state.tabRegion}
-          onChange={(event, newValue) => this.handleChange(event, newValue)}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {Object.keys(tabs).sort().map((region, index) => (
-            <Tab key={region} label={region} {...a11yProps(index)} />
-          ))}
-        </Tabs>
+        <Typography align="center" component="div">
+            <TextField
+              label="Search for Country, State, County, or City"
+              value={this.state.search}
+              onChange={event => this.setSearch(event.target.value)}
+              variant="outlined"
+              style={{width: "25em"}}
+            />
+        </Typography>
 
-        {Object.keys(tabs).sort().map((region, index) => (
-          <TabPanel key={region} value={this.state.tabRegion} index={index}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell></TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell colSpan="3">Status</TableCell>
-                  <TableCell style={{width: "9em"}}>Shift</TableCell>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell></TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell colSpan="3">Status</TableCell>
+              <TableCell style={{ width: "9em" }}>Shift</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {matches.map((match, index) => (
+                <TableRow key={match[1]}>
+
+                  <TableCell padding="checkbox" onClick={() => this.regionClicked(match[1])}>
+                    <Checkbox checked={match[1] in props.selected} />
+                  </TableCell>
+
+                  <TableCell component="th" scope="row" onClick={() => this.regionClicked(match[1])}>
+                    {props.aoi[match[1]].fullName}
+                  </TableCell>
+
+                  <VelocityCell value={props.aoi[match[1]].velocity} />
+                  <AccelerationCell value={props.aoi[match[1]].acceleration} />
+                  <JerkCell value={props.aoi[match[1]].jerk} />
+
+                  <TableCell>
+                    <ArrowLeftIcon color={match[1] in props.selected ? "primary" : "disabled"}
+                      onClick={() => props.setSelected(match[1], (props.selected[match[1]] || 0) - 1)} />
+                    <TextField
+                      size="small"
+                      margin="none"
+                      disabled={!(match[1] in props.selected)}
+                      value={props.selected[match[1]] || 0}
+                      onChange={event => props.setSelected(match[1], event.target.value)}
+                      onClick={() => props.setSelected(match[1], (props.selected[match[1]] || 0))}
+                      style={{ width: "3em" }}
+                    />
+                    <ArrowRightIcon color={match[1] in props.selected ? "primary" : "disabled"}
+                      onClick={() => props.setSelected(match[1], (props.selected[match[1]] || 0) + 1)} />
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {tabs[region].sort((a, b) => props.aoi[a].name > props.aoi[b].name ? 1 : -1)
-                  .map(code => (
-                    <TableRow key={code}>
-
-                      <TableCell padding="checkbox" onClick={() => this.regionClicked(code)}>
-                        <Checkbox checked={code in props.selected} />
-                      </TableCell>
-
-                      <TableCell component="th" scope="row" onClick={() => this.regionClicked(code)}>
-                        {props.aoi[code].name}
-                      </TableCell>
-
-                      <VelocityCell value={props.aoi[code].velocity} />
-                      <AccelerationCell value={props.aoi[code].acceleration} />
-                      <JerkCell value={props.aoi[code].jerk} />
-
-                      <TableCell>
-                        <ArrowLeftIcon color={code in props.selected ? "primary" : "disabled"}
-                          onClick={() => props.setSelected(code, (props.selected[code] || 0) - 1)} />
-                        <TextField
-                          size="small"
-                          margin="none"
-                          disabled={!(code in props.selected)}
-                          value={props.selected[code] || 0}
-                          onChange={event => props.setSelected(code, event.target.value)}
-                          onClick={() => props.setSelected(code, (props.selected[code] || 0))}
-                          style={{width: "3em"}}
-                          />
-                        <ArrowRightIcon color={code in props.selected ? "primary" : "disabled"}
-                          onClick={() => props.setSelected(code, (props.selected[code] || 0) + 1)} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TabPanel>
-        ))}</div>
+              ))}
+          </TableBody>
+        </Table>
+      </div>
     )
   }
 }
