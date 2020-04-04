@@ -154,7 +154,7 @@ export default class RegionView extends React.Component
             return -1
         }
     })
-    matches = matches.slice(0, 100)
+    matches = matches.slice(0, 50)
 
     return (
       <div>
