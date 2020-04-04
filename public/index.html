@@ -5,6 +5,10 @@
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
     <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Tool to graph and compare COVID-19 data for many countries, states, provinces, and counties all over the world." />
+    <meta name="keywords" content="COVID-19,graph,covid19,pandemic,comparison" />
+    <meta name="author" content="John Doe">
+
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
@@ -67,22 +71,33 @@
 
 <h2>Updates</h2>
 <p>
-April 1: Rewrote everything to use React. Not quite all features are as they were, but I think all the functionality is there. Hopefully I'll get some real improvements going in the next week, or at least make it look decent. Feedback links are at the very bottom of the page.<br />
-March 31: Added tested data, although it's not populated for many regions. Ones that do work are e.g. USA, Australia, Italy, and several US States.<br />
-March 27: Experimental feature to show you at a glance how regions are doing. Red is bad. Blue is good.
-The first square is how many new cases there have been recently. Second is whether the rate of new cases
-is increasing or decreasing. Third is how that rate is doing. All normalized for population.<br/>
-March 26: Switched to <a href="https://github.com/CSSEGISandData/COVID-19">Corona Data Scraper</a> data source, which is hopefully more reliable.</br>
-March 25: The Johns Hopkins data source changed, and now no longer reports data on US states, nor recovered counts. They say they will start reporting US states again, and possible will start reporting testing numbers.<br/>
-March 23: Add daily feature. You can see daily cases etc. The data tends to be very messy, but in a bar graph you can still make out trends.<br/>
-March 21: UI update: Select countries you're interested in on the bottom left. Adjust the shift (or remove) in the bottom middle. The bottom right contains close matches for the graph you're looking at.<br/>
-March 16: You can now add shifted lines to compare countries where the outbreak
-started at different times.<br/>
-March 14: You can now view "Active" cases, that is confirmed cases minus deaths
-minus recoveries.<br/>
-March 12: Added view of cases per hospital bed. Data came from the <a
+  April 3: Switched tabs out for a search box, making space in the UI for all
+  the available data. Now there's data for individual US counties, as well as
+  states and provinces of many foreign countries.<br />
+  April 1: Rewrote everything to use React. Not quite all features are as they
+  were, but I think all the functionality is there. Hopefully I'll get some
+  real improvements going in the next week, or at least make it look decent.
+  Feedback links are at the very bottom of the page.<br />
+  March 31: Added tested data, although it's not populated for many regions. Ones that do work are e.g. USA, Australia,
+  Italy, and several US States.<br />
+  March 27: Experimental feature to show you at a glance how regions are doing. Red is bad. Blue is good.
+  The first square is how many new cases there have been recently. Second is whether the rate of new cases
+  is increasing or decreasing. Third is how that rate is doing. All normalized for population.<br />
+  March 26: Switched to <a href="https://github.com/CSSEGISandData/COVID-19">Corona Data Scraper</a> data source, which is
+  hopefully more reliable.</br>
+  March 25: The Johns Hopkins data source changed, and now no longer reports data on US states, nor recovered counts. They
+  say they will start reporting US states again, and possible will start reporting testing numbers.<br />
+  March 23: Add daily feature. You can see daily cases etc. The data tends to be very messy, but in a bar graph you can
+  still make out trends.<br />
+  March 21: UI update: Select countries you're interested in on the bottom left. Adjust the shift (or remove) in the
+  bottom middle. The bottom right contains close matches for the graph you're looking at.<br />
+  March 16: You can now add shifted lines to compare countries where the outbreak
+  started at different times.<br />
+  March 14: You can now view "Active" cases, that is confirmed cases minus deaths
+  minus recoveries.<br />
+  March 12: Added view of cases per hospital bed. Data came from the <a
     href="https://data.worldbank.org/indicator/SH.MED.BEDS.ZS">world
-    bank</a>.<br/>
+    bank</a>.<br />
 </p>
 
 
