@@ -203,7 +203,7 @@ export default class RegionView extends React.Component
                       value={props.selected[match[1]] || 0}
                       onChange={event => props.setSelected(match[1], event.target.value)}
                       onClick={() => props.setSelected(match[1], (props.selected[match[1]] || 0))}
-                      style={{ width: "3em" }}
+                      style={{ width: "2.5em" }}
                     />
                     <ArrowRightIcon color={match[1] in props.selected ? "primary" : "disabled"}
                       onClick={() => props.setSelected(match[1], (props.selected[match[1]] || 0) + 1)} />
