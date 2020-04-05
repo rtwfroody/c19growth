@@ -68,7 +68,8 @@ export default class PlotView extends React.Component
         let traces = []
 
         let layout = {
-            yaxis: {title: ""},
+            yaxis: {title: "", linecolor: '#ccc', linewidth: 1, mirror: true},
+            xaxis: {linecolor: '#ccc', linewidth: 1, mirror: true},
             margin: {t:25, l:60, b:50}
         }
 
