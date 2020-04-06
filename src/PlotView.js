@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Container from '@material-ui/core/Container';
+import Typography from '@material-ui/core/Typography';
 
 import Plot from 'react-plotly.js';
 
@@ -115,11 +116,12 @@ export default class PlotView extends React.Component
         var max_shift = 0;
         var start_offset = Number.MAX_VALUE
 
+        var errors = []
         for (const code in this.props.selected) {
             const [error, x, y] = makeTrace(this.props.aoi[code], this.props.dataSet,
                 this.props.dataPer, this.props.daily)
             if (error) {
-                console.log("TODO:", error)
+                errors.push(error)
                 continue
             }
 
@@ -173,6 +175,14 @@ export default class PlotView extends React.Component
             layout.yaxis.type = 'log'
         }
 
+        const errorRender = errors.length > 0 ? (
+            <Typography color='error' component="span">
+            {errors.map((error, index) =>
+                <div key={index}>{error}<br /></div>
+            )}
+            </Typography>
+        ) : undefined;
+
         if (traces.length > 0) {
             const dates = traces[0].x
             let future_dates = []
@@ -194,16 +204,20 @@ export default class PlotView extends React.Component
             return (
                 // https://codesandbox.io/s/35loxpjmq has an example on how to make
                 // resizing also work.
+                <div>
                 <Plot
                     style={{ width: '100%', height: '100%' }}
                     data={traces}
                     layout={layout} />
+                {errorRender}
+                </div>
             )
         } else {
             return (
                 <Container
                     style={{ width: '100%', height: '100%' }}>
                         Select an area.
+                {errorRender}
                     </Container>
             )
         }
