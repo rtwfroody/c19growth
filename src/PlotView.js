@@ -116,6 +116,11 @@ export default class PlotView extends React.Component
         var max_shift = 0;
         var start_offset = Number.MAX_VALUE
 
+        var start_limit = -1;
+        if (this.props.from.match(/s\d+/)) {
+            start_limit = parseInt(this.props.from.slice(1))
+        }
+
         var errors = []
         for (const code in this.props.selected) {
             const [error, x, y] = makeTrace(this.props.aoi[code], this.props.dataSet,
@@ -139,10 +144,12 @@ export default class PlotView extends React.Component
             }
             traces.push(trace)
 
-            for (var i = 0; i < y.length; i++) {
-                if (y[i] > 0) {
-                    start_offset = Math.min(i, start_offset)
-                    break;
+            if (start_limit >= 0) {
+                for (var i = 0; i < y.length; i++) {
+                    if (y[i] >= start_limit) {
+                        start_offset = Math.min(i, start_offset)
+                        break;
+                    }
                 }
             }
 

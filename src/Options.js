@@ -41,6 +41,16 @@ export default class Options extends React.Component
                     <MenuItem value={data_per.CAPITA}>per Capita</MenuItem>
                     <MenuItem value={data_per.BED}>per Hospital Bed</MenuItem>
                 </Select>
+                    from
+                <Select
+                    style={{margin: '0.5em'}}
+                    value={this.props.from}
+                    onChange={this.props.setFrom}
+                >
+                    <MenuItem value="s1">the 1st case</MenuItem>
+                    <MenuItem value="s10">the 10th case</MenuItem>
+                    <MenuItem value="s100">the 100th case</MenuItem>
+                </Select>
                     using a
                 <Select
                     style={{margin: '0.5em'}}

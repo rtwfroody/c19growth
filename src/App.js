@@ -86,6 +86,9 @@ function UpdateUrl(props) {
   if (props.daily) {
     parts.push("dly")
   }
+  if (props.from !== "s1") {
+    parts.push(props.from)
+  }
 
   for (const code in props.selected) {
     if (props.selected[code] !== 0) {
@@ -115,7 +118,8 @@ class Dashboard extends React.Component
       scale: scale.LINEAR,
       data_set: data_set.CONFIRMED,
       data_per: data_per.ABSOLUTE,
-      focus: undefined
+      focus: undefined,
+      from: "s1"
     }
   }
 
@@ -151,6 +155,7 @@ class Dashboard extends React.Component
   setScale(event) { this.setState({scale: event.target.value}) }
   setDataSet(event) { this.setState({data_set: event.target.value}) }
   setDataPer(event) { this.setState({data_per: event.target.value}) } 
+  setFrom(event) { this.setState({from: event.target.value}) }
   setFocus(code) { this.setState({focus: code})}
 
   render() {
@@ -198,6 +203,7 @@ class Dashboard extends React.Component
                 dataSet={this.state.data_set}
                 dataPer={this.state.data_per}
                 scale={this.state.scale}
+                from={this.state.from}
               />
           </Grid>
 
@@ -208,6 +214,7 @@ class Dashboard extends React.Component
                 scale={this.state.scale} setScale={(e) => this.setScale(e)}
                 data_set={this.state.data_set} setDataSet={(e) => this.setDataSet(e)}
                 data_per={this.state.data_per} setDataPer={(e) => this.setDataPer(e)}
+                from={this.state.from} setFrom={(e) => this.setFrom(e)}
               />
             </Paper>
           </Grid>
@@ -242,6 +249,7 @@ class Dashboard extends React.Component
           scale={this.state.scale} setScale={(e) => this.setScale(e)}
           data_set={this.state.data_set}
           data_per={this.state.data_per}
+          from={this.state.from}
         />
       </div>
     );
@@ -281,6 +289,8 @@ class Dashboard extends React.Component
             this.setState({scale: scale.LOG})
           } else if (part === "dly") {
             this.setState({daily: true})
+          } else if (part.match(/s\d+/)) {
+            this.setState({from: part})
           } else {
             console.log("ERROR: Don't know what to do with " + part + " in URL (" + url.hash + ").")
           }
