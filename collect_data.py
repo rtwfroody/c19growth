@@ -106,7 +106,13 @@ def make_code(path):
         if code not in part_code_dict.inverse:
             part_code_dict[text] = code
             return code
-    assert(0, "Couldn't generate code for %r." % text)
+    for suffix in range(1, 10):
+        for code in generate_acronym(text, 4):
+            code = code + str(suffix)
+            if code not in part_code_dict.inverse:
+                part_code_dict[text] = code
+                return code
+    assert 0, "Couldn't generate code for %r." % text
 
 def read_csv(f, has_header=True, skip=0):
     reader = csv.reader(f)
@@ -160,10 +166,10 @@ class Collector(object):
     def __init__(self):
         # Area Of Interest
         self.aoi = {
-            'XKX': {
-                'name': 'Kosovo',
-                'population': 1831000,
-                'hospital_beds': 5269}
+#            'XKX': {
+#                'name': 'Kosovo',
+#                'population': 1831000,
+#                'hospital_beds': 5269}
         }
         # country -> state -> county -> city
         # At each level there may be _data -> t -> d -> number
@@ -235,6 +241,7 @@ class Collector(object):
         for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
                 aoi['name'] = aoi['path'][-1]
+            pprint(aoi)
             aoi['fullName'] = ", ".join(
                 [self.alpha3.get(aoi['path'][0], aoi['path'][0])] +
                 aoi['path'][1:])
