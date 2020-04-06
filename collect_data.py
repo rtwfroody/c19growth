@@ -175,7 +175,7 @@ class Collector(object):
         # At each level there may be _data -> t -> d -> number
         self.area_tree = {}
         self.enable_debug = False
-        self.alpha3 = {}
+        self.alpha3 = bidict()
 
     def add_area(self, path):
         root = self.area_tree
@@ -209,6 +209,7 @@ class Collector(object):
                 'United States': 'USA'
             }
             entry['country'] = translate_country.get(entry['country'], entry['country'])
+            entry['country'] = self.alpha3.inverse.get(entry['country'], entry['country'])
             path = (entry['country'], entry['state'], entry['county'], entry['city'])
             path = [p for p in path if len(p)]
             self.add_area(path)
