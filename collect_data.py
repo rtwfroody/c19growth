@@ -106,9 +106,9 @@ def make_code(path):
         if code not in part_code_dict.inverse:
             part_code_dict[text] = code
             return code
-    for suffix in range(1, 10):
+    for suffix in (chr(ord('A')+i) for i in range(0, 26)):
         for code in generate_acronym(text, 4):
-            code = code + str(suffix)
+            code = code + suffix
             if code not in part_code_dict.inverse:
                 part_code_dict[text] = code
                 return code
@@ -242,7 +242,6 @@ class Collector(object):
         for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
                 aoi['name'] = aoi['path'][-1]
-            pprint(aoi)
             aoi['fullName'] = ", ".join(
                 [self.alpha3.get(aoi['path'][0], aoi['path'][0])] +
                 aoi['path'][1:])
