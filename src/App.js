@@ -204,6 +204,7 @@ class Dashboard extends React.Component
                 dataPer={this.state.data_per}
                 scale={this.state.scale}
                 from={this.state.from}
+                focus={this.state.focus}
               />
           </Grid>
 

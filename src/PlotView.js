@@ -142,6 +142,9 @@ export default class PlotView extends React.Component
                     color: this.color_map[code]
                 }
             }
+            if (code === this.props.focus) {
+                trace.line.width = 3
+            }
             traces.push(trace)
 
             if (start_limit >= 0) {

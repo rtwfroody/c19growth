@@ -3,7 +3,6 @@ places around the world.
 
 # TODO
 
-* Highlight the region that has focus.
 * Put a small graph/visualization in each button that you use to select a
   country
 * Plot deaths and active cases together?
