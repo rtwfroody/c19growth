@@ -225,7 +225,7 @@ class Dashboard extends React.Component
                 aoi={this.state.aoi}
                 selected={this.state.selected}
                 setSelected={(code, shift) => this.setSelected(code, shift)}
-                setFocus={code => this.setFocus(code)}
+                focus={this.state.focus} setFocus={code => this.setFocus(code)}
               />
             </Paper>
           </Grid>

@@ -179,7 +179,8 @@ export default class RegionView extends React.Component
           </TableHead>
           <TableBody>
             {matches.map((match, index) => (
-                <TableRow key={match[1]}>
+                <TableRow key={match[1]} bgcolor={
+                  this.props.focus === match[1] ? "#f0f7ff" : "white"}>
 
                   <TableCell padding="checkbox" onClick={() => this.regionClicked(match[1])}>
                     <Checkbox checked={match[1] in props.selected} />
