@@ -123,8 +123,9 @@ export default class PlotView extends React.Component
 
         var errors = []
         for (const code in this.props.selected) {
-            const [error, x, y] = makeTrace(this.props.aoi[code], this.props.dataSet,
-                this.props.dataPer, this.props.daily)
+            const [error, x, y, trace_start_offset] =
+                makeTrace(this.props.aoi[code], this.props.dataSet,
+                    this.props.dataPer, this.props.daily, start_limit)
             if (error) {
                 errors.push(error)
                 continue
@@ -147,14 +148,7 @@ export default class PlotView extends React.Component
             }
             traces.push(trace)
 
-            if (start_limit >= 0) {
-                for (var i = 0; i < y.length; i++) {
-                    if (y[i] >= start_limit) {
-                        start_offset = Math.min(i, start_offset)
-                        break;
-                    }
-                }
-            }
+            start_offset = Math.min(trace_start_offset, start_offset)
 
             const shift = this.props.selected[code]
             max_shift = Math.max(max_shift, shift)
@@ -204,8 +198,6 @@ export default class PlotView extends React.Component
                 future_dates.push((1900 + date.getYear()) + "-" + (1 + date.getMonth()) + "-" + date.getDate())
             }
 
-            // Make sure we include the last 0 day.
-            start_offset = Math.max(start_offset - 1, 0)
             for (let trace of traces) {
                 trace.y = trace.y.slice(start_offset, trace.y.length)
                 trace.x = trace.x.slice(start_offset, trace.x.length).concat(future_dates)

@@ -1,6 +1,6 @@
 import {data_set, data_per} from './constants.js';
 
-export function makeTrace(aoi, cases, per, daily)
+export function makeTrace(aoi, cases, per, daily, start_limit)
 {
     var cases_active
     if (cases === data_set.ACTIVE) {
@@ -15,7 +15,9 @@ export function makeTrace(aoi, cases, per, daily)
     }
     const x = Object.keys(aoi.data[cases]).sort()
     var y = []
-    for (const d of x) {
+    var start_offset = 0
+    for (let index = 0; index < x.length; index++) {
+        const d = x[index]
         var value = aoi.data[cases][d]
         if (cases_active) {
             if ('deaths' in aoi.data) {
@@ -24,6 +26,9 @@ export function makeTrace(aoi, cases, per, daily)
             if ('recovered' in aoi.data) {
                 value -= aoi.data['recovered'][d]
             }
+        }
+        if (value < start_limit) {
+            start_offset = index
         }
         y.push(value)
     }
@@ -46,5 +51,5 @@ export function makeTrace(aoi, cases, per, daily)
         }
     }
 
-    return [undefined, x, y]
+    return [undefined, x, y, start_offset]
 }
