@@ -126,7 +126,12 @@ export default class RegionView extends React.Component
         return false
       }
     }
-    return score + (1.0 / this.props.aoi[code].population)
+    if (this.props.aoi[code].population) {
+      score += 1.0 / this.props.aoi[code].population
+    } else {
+      score += 1
+    }
+    return score
   }
 
   render() {
@@ -135,12 +140,12 @@ export default class RegionView extends React.Component
     let matches = []
     for (const code in props.aoi) {
       if (code in props.selected) {
-          matches.push([-1, code, props.aoi[code].fullName])
+        matches.push([-1, code, props.aoi[code].fullName])
       } else {
-          const m = this.matches(code)
-          if (m) {
-            matches.push([m, code, props.aoi[code].fullName])
-          }
+        const m = this.matches(code)
+        if (m) {
+          matches.push([m, code, props.aoi[code].fullName])
+        }
       }
     }
     matches.sort(function(a, b) {
