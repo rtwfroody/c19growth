@@ -3,6 +3,7 @@ places around the world.
 
 # TODO
 
+* Add advanced smoothing option
 * Put a small graph/visualization in each button that you use to select a
   country
 * Plot deaths and active cases together?

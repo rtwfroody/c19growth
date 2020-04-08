@@ -235,8 +235,8 @@ class Collector(object):
                     except ValueError:
                         pass
 
-                    # Mark this as one we need to fill in later.
-                    self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
+                # Mark this as one we need to fill in later.
+                self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
 
         # Now do a second pass, filling in missing data by summing up all the child nodes.
         for code, aoi in self.aoi.items():
