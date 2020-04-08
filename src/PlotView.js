@@ -3,10 +3,13 @@ import React from 'react';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 
-import Plot from 'react-plotly.js';
+import Plotly from './plotly-basic-1.53.0.js';
+import createPlotlyComponent from 'react-plotly.js/factory';
 
 import {data_set, scale, data_per} from './constants.js';
 import {makeTrace} from './helpers.js';
+
+const Plot = createPlotlyComponent(Plotly);
 
 function* color_generator()
 {
