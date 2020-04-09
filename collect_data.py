@@ -337,27 +337,22 @@ class Collector(object):
                 print("No cases for", aoi['name'])
                 continue
             distance = []
-            size = 4
-            values = [v or 0 for v in aoi['data']['cases']]
             pop = aoi['population']
-            for i in range(size):
-                if i == 0:
-                    distance.insert(0, sum(values[-window:]) / window / pop)
-                else:
-                    distance.insert(0, sum(values[-window * (i+1):-window * i]) / window / pop)
+            distance = [(v or 0)/pop for v in aoi['data']['cases']]
             velocity = []
             for i in range(len(distance)-1):
-                velocity.append((distance[i + 1] - distance[i]) / size)
+                velocity.append(distance[i + 1] - distance[i])
             acceleration = []
             for i in range(len(velocity)-1):
-                acceleration.append((velocity[i + 1] - velocity[i]) / size)
+                acceleration.append(velocity[i + 1] - velocity[i])
             jerk = []
             for i in range(len(acceleration)-1):
-                jerk.append((acceleration[i + 1] - acceleration[i]) / size)
+                jerk.append(acceleration[i + 1] - acceleration[i])
 
-            aoi['velocity'] = velocity[-1]
-            aoi['acceleration'] = acceleration[-1]
-            aoi['jerk'] = jerk[-1]
+            size = 4
+            aoi['velocity'] = sum(velocity[-size:]) / size
+            aoi['acceleration'] = sum(acceleration[-size:]) / size
+            aoi['jerk'] = sum(jerk[-size:]) / size
 
     def build(self):
         self.all_csv()
