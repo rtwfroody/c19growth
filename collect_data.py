@@ -347,13 +347,13 @@ class Collector(object):
                     distance.insert(0, sum(values[-window * (i+1):-window * i]) / window / pop)
             velocity = []
             for i in range(len(distance)-1):
-                velocity.append(distance[i + 1] - distance[i])
+                velocity.append((distance[i + 1] - distance[i]) / size)
             acceleration = []
             for i in range(len(velocity)-1):
-                acceleration.append(velocity[i + 1] - velocity[i])
+                acceleration.append((velocity[i + 1] - velocity[i]) / size)
             jerk = []
             for i in range(len(acceleration)-1):
-                jerk.append(acceleration[i + 1] - acceleration[i])
+                jerk.append((acceleration[i + 1] - acceleration[i]) / size)
 
             aoi['velocity'] = velocity[-1]
             aoi['acceleration'] = acceleration[-1]

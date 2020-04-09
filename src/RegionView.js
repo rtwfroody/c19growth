@@ -7,6 +7,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -46,11 +47,12 @@ TabPanel.propTypes = {
   value: PropTypes.any.isRequired,
 };
 
-function color_fade(type, start, end, percentage)
+function color_fade(type, start, end, fraction)
 {
     var color = []
+    fraction = Math.max(0, Math.min(fraction, 1))
     for (var i = 0; i < 3; i++) {
-        color.push(Math.round((start[i] * percentage + end[i] * (100 - percentage)) / 100))
+        color.push(Math.round(start[i] * fraction + end[i] * (1 - fraction)))
     }
     if (type === "hsl") {
         return "hsl(" + color[0] + "," + color[1] + "%," + color[2] + "%)"
@@ -62,27 +64,38 @@ function color_fade(type, start, end, percentage)
 function StatusCell(props) {
   const classes = useStyles();
   const style = { background: props.color }
-  return <TableCell className={classes.statusCell} style={style} />
+  return (
+      <Tooltip title={props.tip}>
+        <TableCell className={classes.statusCell} style={style} />
+      </Tooltip>
+  )
 }
 
 function VelocityCell(props) {
-  const p = Math.min(100, Math.max(100.0 * props.value / 0.0001, 0))
-  const color = color_fade("hsl", [0, 100, 50], [0, 100, 100], p)
-  return <StatusCell color={color} />
+  // 100 people per million per day is maxed out
+  const color = color_fade("hsl", [0, 100, 50], [0, 100, 100], props.value * 10000)
+  return <StatusCell color={color}
+    tip={Math.round(1000000 * props.value) + " new cases/day/million people"}/>
 }
 
 function AccelerationCell(props) {
-  const p = Math.min(100, Math.max(100.0 * props.value / 0.0001, -100));
+  // 10 people per million per day per day is maxed out
+  const p = props.value * 100000
   const color = p > 0 ? color_fade("hsl", [0, 100, 50], [0, 100, 100], p)
         : color_fade("hsl", [210, 100, 50], [210, 100, 100], -p);
-  return <StatusCell color={color} />
+  return <StatusCell color={color}
+    tip={(Math.round(10000000 * props.value) / 10) + " new cases/day^2/million people"}
+        />
 }
 
 function JerkCell(props) {
-  const p = Math.min(100, Math.max(100.0 * props.value / 0.0001, -100));
+  // 1 people per million per day per day per day is maxed out
+  const p = props.value * 1000000
   const color = p > 0 ? color_fade("hsl", [0, 100, 50], [0, 100, 100], p)
     : color_fade("hsl", [210, 100, 50], [210, 100, 100], -p);
-  return <StatusCell color={color} />
+  return <StatusCell color={color}
+    tip={(Math.round(100000000 * props.value) / 100) + " new cases/day^3/million people"}
+        />
 }
 
 export default class RegionView extends React.Component
