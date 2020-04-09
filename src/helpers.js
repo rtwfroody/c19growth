@@ -1,5 +1,18 @@
 import {data_set, data_per} from './constants.js';
 
+// Parse YYYY-MM-DD
+// If you feed new Date() a string, then timezones mess it up and sometimes(?)
+// you get a day earlier.
+// https://stackoverflow.com/questions/2587345/why-does-date-parse-give-incorrect-results
+// has more info than I care to read about it.
+export function parseDate(text)
+{
+    // Cut and pasted from the above URL.
+    var parts = text.split('-');
+    // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
+    return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
+}
+
 export function makeTrace(aoi, cases, per, daily, start_limit)
 {
     var cases_active
@@ -10,10 +23,10 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
         cases_active = false
     }
 
-    if (!(cases in aoi.data)) {
+    if (!(cases in aoi.data) || aoi.data[cases].length <= 0) {
         return {'error': "ERROR: No " + cases + " data for " + aoi.name}
     }
-    var date = new Date(aoi.data[cases + "-start"])
+    var date = parseDate(aoi.data[cases + "-start"])
     var x = []
     var y = []
     var start_offset = 0

@@ -187,8 +187,6 @@ export default class PlotView extends React.Component
             const dates = traces[0].x
             let future_dates = []
             let date = new Date(dates[dates.length - 1])
-            // TODO: Why do I need this?
-            date.setDate(date.getDate() + 1)
             for (let i = 0; i < max_shift; i++) {
                 date.setDate(date.getDate() + 1)
                 future_dates.push((1900 + date.getYear()) + "-" + (1 + date.getMonth()) + "-" + date.getDate())
