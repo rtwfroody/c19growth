@@ -9,36 +9,6 @@ import MatchView from './MatchView';
 import Options from './Options';
 import {data_set, scale, data_per} from './constants.js';
 
-function cleanAoi(aoi)
-{
-    // Make sure that each sequence we have contains every date we have.
-    var all_dates = {}
-    for (const code in aoi) {
-        let region = aoi[code]
-        for (const t in region.data) {
-            for (const d in region.data[t]) {
-                all_dates[d] = true
-            }
-        }
-    }
-
-    all_dates = Object.keys(all_dates).sort()
-    for (const code in aoi) {
-        let region = aoi[code]
-        for (const t in region.data) {
-            var last = 0
-            for (const d of all_dates) {
-                if (d in region.data[t]) {
-                    last = region.data[t][d]
-                } else {
-                    region.data[t][d] = last
-                }
-            }
-        }
-    }
-    return aoi
-}
-
 function UpdateUrl(props) {
   var parts = []
   switch (props.data_set) {
@@ -260,7 +230,6 @@ class Dashboard extends React.Component
     this.setState({ ...this.state, loading: true })
     fetch("outbreak.json")
       .then(response => response.json())
-      .then(aoi => cleanAoi(aoi))
       .then(result => {
         var url = new URL(window.location)
 

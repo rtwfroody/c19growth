@@ -11,20 +11,23 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
     }
 
     if (!(cases in aoi.data)) {
-        return ["ERROR: No " + cases + " data for " + aoi.name, undefined, undefined]
+        return {'error': "ERROR: No " + cases + " data for " + aoi.name}
     }
-    const x = Object.keys(aoi.data[cases]).sort()
+    var date = new Date(aoi.data[cases + "-start"])
+    var x = []
     var y = []
     var start_offset = 0
-    for (let index = 0; index < x.length; index++) {
-        const d = x[index]
-        var value = aoi.data[cases][d]
+    for (let index = 0; index < aoi.data[cases].length; index++) {
+        x.push(new Date(date))
+        date.setDate(date.getDate() + 1)
+
+        var value = aoi.data[cases][index]
         if (cases_active) {
             if ('deaths' in aoi.data) {
-                value -= aoi.data['deaths'][d]
+                value -= aoi.data['deaths'][index]
             }
             if ('recovered' in aoi.data) {
-                value -= aoi.data['recovered'][d]
+                value -= aoi.data['recovered'][index]
             }
         }
         if (value < start_limit) {
@@ -35,12 +38,12 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
 
     if (per === data_per.CAPITA) {
         if (!aoi.population) {
-            return ["ERROR: Don't know population for " + aoi.name + ".", undefined, undefined]
+            return {'error': "ERROR: Don't know population for " + aoi.name + "."}
         }
         y = y.map(x => 1000000.0 * x / aoi.population)
     } else if (per === data_per.BED) {
         if (!aoi.hospital_beds) {
-            return ["ERROR: Don't know number of hospital beds for " + aoi.name + ".", undefined, undefined]
+            return {'error': "ERROR: Don't know number of hospital beds for " + aoi.name + "."}
         }
         y = y.map(x => x / aoi.hospital_beds)
     }
@@ -51,5 +54,5 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
         }
     }
 
-    return [undefined, x, y, start_offset]
+    return {x: x, y: y, start_offset: start_offset}
 }

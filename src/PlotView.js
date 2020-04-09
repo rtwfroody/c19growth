@@ -126,11 +126,10 @@ export default class PlotView extends React.Component
 
         var errors = []
         for (const code in this.props.selected) {
-            const [error, x, y, trace_start_offset] =
-                makeTrace(this.props.aoi[code], this.props.dataSet,
+            var trace = makeTrace(this.props.aoi[code], this.props.dataSet,
                     this.props.dataPer, this.props.daily, start_limit)
-            if (error) {
-                errors.push(error)
+            if (trace.error) {
+                errors.push(trace.error)
                 continue
             }
 
@@ -138,20 +137,14 @@ export default class PlotView extends React.Component
                 this.color_map[code] = colorgen.next().value
             }
 
-            var trace = {
-                name: this.props.aoi[code].name,
-                x: x,
-                y: y,
-                line: {
-                    color: this.color_map[code]
-                }
-            }
+            trace.name = this.props.aoi[code].name
+            trace.line = { color: this.color_map[code] }
             if (code === this.props.focus) {
                 trace.line.width = 3
             }
             traces.push(trace)
 
-            start_offset = Math.min(trace_start_offset, start_offset)
+            start_offset = Math.min(trace.start_offset, start_offset)
 
             const shift = this.props.selected[code]
             max_shift = Math.max(max_shift, shift)

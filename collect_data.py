@@ -238,6 +238,8 @@ class Collector(object):
                 # Mark this as one we need to fill in later.
                 self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
 
+        allDates = set()
+
         # Now do a second pass, filling in missing data by summing up all the child nodes.
         for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
@@ -251,9 +253,26 @@ class Collector(object):
                 aoi['name'] = self.alpha3.get(aoi['path'][-1], aoi['path'][-1])
             for t in aoi['data']:
                 for d in aoi['data'][t]:
+                    allDates.add(d)
                     if aoi['data'][t][d] is None:
                         node = self.get_node(aoi['path'])
                         aoi['data'][t][d] = self.tally(node, t, d)
+
+        # Do another pass, translating date->value hashes into lists with a
+        # value for each date.
+        allDates = sorted(list(allDates))
+        # TODO: we assume that allDates is contiguous
+        for code, aoi in self.aoi.items():
+            for t in list(aoi['data'].keys()):
+                sequence = []
+                started = False
+                for d in allDates:
+                    if not started and aoi['data'][t].get(d):
+                        started = True
+                        aoi['data'][t + "-start"] = d
+                    if started:
+                        sequence.append(aoi['data'][t].get(d))
+                aoi['data'][t] = sequence
 
     def save_data(self, path):
         json.dump(self.aoi, open(path, "w"))
@@ -319,7 +338,7 @@ class Collector(object):
                 continue
             distance = []
             size = 4
-            values = [v for k, v in sorted(aoi['data']['cases'].items())]
+            values = [v or 0 for v in aoi['data']['cases']]
             pop = aoi['population']
             for i in range(size):
                 if i == 0:

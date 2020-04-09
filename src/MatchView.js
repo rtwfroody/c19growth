@@ -10,40 +10,47 @@ import TableRow from '@material-ui/core/TableRow';
 
 import {makeTrace} from './helpers.js';
 
-
 var findMatches = memoize(
 function (aoi, target_code, data_set, data_per)
 {
-    const target_trace = makeTrace(aoi[target_code], data_set, data_per, false)[2]
-    if (!target_trace) {
+    const target_trace = makeTrace(aoi[target_code], data_set, data_per, false)
+    if ('error' in target_trace) {
         /* We don't have info for the currently selected trace. */
         return []
     }
+
+    const day = 1000 * 60 * 60 * 24
 
     var results = []
     for (const code in aoi) {
         if (code === target_code) {
             continue
         }
-        const trace = makeTrace(aoi[code], data_set, data_per, false)[2]
-        if (!trace) {
+        const trace = makeTrace(aoi[code], data_set, data_per, false)
+        if ('error' in trace) {
             continue
         }
 
-        for (let shift = 0; shift < target_trace.length; shift++) {
+        for (let shift = 0; shift < target_trace.x.length; shift++) {
             let difference = 0
-            for (let i = 0; i < shift; i++) {
-                const delta = target_trace[i]
+            let index = (target_trace.x[0] - trace.x[0]) / day - shift
+            let target_index = 0
+            while (target_index < target_trace.x.length) {
+                let delta
+                if (index < 0 || index >= trace.x.length) {
+                    delta = target_trace.y[target_index]
+                } else {
+                    delta = trace.y[index] - target_trace.y[target_index]
+                }
                 difference += delta * delta
+                index++
+                target_index++
             }
-            for (let i = 0; i < target_trace.length - shift; i++) {
-                const delta = trace[i] - target_trace[i + shift]
-                difference += delta * delta
-            }
+
             results.push([difference, code, shift])
         }
     }
-    results.sort(function (a, b) { return a[0] - b[0] })
+    results.sort((a, b) => a[0] > b[0] ? 1 : -1)
     let seen = {}
     let unique_results = []
     for (const r of results) {
