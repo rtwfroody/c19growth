@@ -272,7 +272,10 @@ class Collector(object):
                         aoi['data'][t + "-start"] = d
                     if started:
                         sequence.append(aoi['data'][t].get(d))
-                aoi['data'][t] = sequence
+                if sequence:
+                    aoi['data'][t] = sequence
+                else:
+                    del aoi['data'][t]
 
     def save_data(self, path):
         json.dump(self.aoi, open(path, "w"))

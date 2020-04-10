@@ -16,6 +16,7 @@ export function parseDate(text)
 export function makeTrace(aoi, cases, per, daily, start_limit)
 {
     var cases_active
+    const day_ms = 24 * 60 * 60 * 1000
     if (cases === data_set.ACTIVE) {
         cases = data_set.CONFIRMED
         cases_active = true
@@ -26,7 +27,20 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
     if (!(cases in aoi.data) || aoi.data[cases].length <= 0) {
         return {'error': "ERROR: No " + cases + " data for " + aoi.name}
     }
-    var date = parseDate(aoi.data[cases + "-start"])
+
+    const date = parseDate(aoi.data[cases + "-start"])
+
+    let deaths_offset = 0
+    let recovered_offset = 0
+    if (cases_active) {
+        if ('deaths' in aoi.data) {
+            deaths_offset = (parseDate(aoi.data["deaths-start"]) - date) / day_ms
+        }
+        if ('recovered' in aoi.data) {
+            recovered_offset = (parseDate(aoi.data["recovered-start"]) - date) / day_ms
+        }
+    }
+
     var x = []
     var y = []
     var start_offset = 0
@@ -37,10 +51,10 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
         var value = aoi.data[cases][index]
         if (cases_active) {
             if ('deaths' in aoi.data) {
-                value -= aoi.data['deaths'][index]
+                value -= aoi.data['deaths'][index - deaths_offset]
             }
             if ('recovered' in aoi.data) {
-                value -= aoi.data['recovered'][index]
+                value -= aoi.data['recovered'][index - recovered_offset]
             }
         }
         if (value < start_limit) {

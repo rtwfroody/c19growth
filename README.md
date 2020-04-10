@@ -1,6 +1,9 @@
 Goal: make a tool that helps people determine how bad things are at varoius
 places around the world.
 
+# BUGS
+
+
 # TODO
 
 * Add advanced smoothing option
