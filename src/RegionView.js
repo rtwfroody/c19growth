@@ -140,7 +140,8 @@ export default class RegionView extends React.Component
       }
     }
     if (this.props.aoi[code].population) {
-      score += 1.0 / this.props.aoi[code].population
+      score += 1 - this.props.aoi[code].velocity *
+        this.props.aoi[code].population / 1000000000
     } else {
       score += 1
     }
