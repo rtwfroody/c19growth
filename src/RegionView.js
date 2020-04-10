@@ -75,7 +75,7 @@ function VelocityCell(props) {
   // 100 people per million per day is maxed out
   const color = color_fade("hsl", [0, 100, 50], [0, 100, 100], props.value * 10000)
   return <StatusCell color={color}
-    tip={Math.round(1000000 * props.value) + " new cases/day/million people"}/>
+    tip={Math.round(1000000 * props.value) + " new cases/million people/day"}/>
 }
 
 function AccelerationCell(props) {
@@ -84,7 +84,7 @@ function AccelerationCell(props) {
   const color = p > 0 ? color_fade("hsl", [0, 100, 50], [0, 100, 100], p)
         : color_fade("hsl", [210, 100, 50], [210, 100, 100], -p);
   return <StatusCell color={color}
-    tip={(Math.round(10000000 * props.value) / 10) + " new cases/day^2/million people"}
+    tip={(Math.round(10000000 * props.value) / 10) + " new cases/million people/day^2"}
         />
 }
 
@@ -94,7 +94,7 @@ function JerkCell(props) {
   const color = p > 0 ? color_fade("hsl", [0, 100, 50], [0, 100, 100], p)
     : color_fade("hsl", [210, 100, 50], [210, 100, 100], -p);
   return <StatusCell color={color}
-    tip={(Math.round(100000000 * props.value) / 100) + " new cases/day^3/million people"}
+    tip={(Math.round(100000000 * props.value) / 100) + " new cases/million people/day^3"}
         />
 }
 
@@ -191,7 +191,7 @@ export default class RegionView extends React.Component
             <TableRow>
               <TableCell></TableCell>
               <TableCell>Name</TableCell>
-              <TableCell colSpan="3">Status</TableCell>
+              <TableCell colSpan="3">Last Week</TableCell>
               <TableCell style={{ width: "9em" }}>Shift</TableCell>
             </TableRow>
           </TableHead>

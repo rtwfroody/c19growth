@@ -349,10 +349,10 @@ class Collector(object):
             for i in range(len(acceleration)-1):
                 jerk.append(acceleration[i + 1] - acceleration[i])
 
-            size = 4
-            aoi['velocity'] = sum(velocity[-size:]) / size
-            aoi['acceleration'] = sum(acceleration[-size:]) / size
-            aoi['jerk'] = sum(jerk[-size:]) / size
+            window = 7
+            aoi['velocity'] = sum(velocity[-window:]) / window
+            aoi['acceleration'] = sum(acceleration[-window:]) / window
+            aoi['jerk'] = sum(jerk[-window:]) / window
 
     def build(self):
         self.all_csv()
