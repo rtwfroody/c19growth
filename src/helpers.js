@@ -1,22 +1,87 @@
 import {data_set, data_per} from './constants.js';
 
+// JavaScript Dates refer to a moment in time, not just a calendar day. That
+// means it's hard to do math with them etc, because of timezones (specifically,
+// daylight savings time).
+
+var dateOrder = {}
+
 // Parse YYYY-MM-DD
-// If you feed new Date() a string, then timezones mess it up and sometimes(?)
-// you get a day earlier.
-// https://stackoverflow.com/questions/2587345/why-does-date-parse-give-incorrect-results
-// has more info than I care to read about it.
-export function parseDate(text)
-{
-    // Cut and pasted from the above URL.
-    var parts = text.split('-');
-    // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
-    return new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
+class CalendarDay {
+    constructor(arg) {
+        if (arg instanceof CalendarDay) {
+            this.value = arg.value.slice()
+        } else {
+            // JavaScript will turn anything into a string, right?
+            this.value = arg.split('-').map(p => parseInt(p, 10))
+        }
+    }
+
+    increment() {
+        if (!(this.value in dateOrder)) {
+            // Use the library, because I do not want to reinvent this wheel.
+            var d = this.date()
+            d.setDate(d.getDate() + 1)
+            dateOrder[this.value] = [d.getFullYear(), d.getMonth() + 1, d.getDate()]
+        }
+        this.value = dateOrder[this.value]
+    }
+
+    add(n) {
+        while (n > 0) {
+            this.increment()
+            n--
+        }
+    }
+
+    date() {
+        const [year, month, day] = this.value
+        return new Date(year, month - 1, day)
+    }
+
+    // Return 1 if this>other, -1 if other<this, 0 if they're equal.
+    cmp(other) {
+        for (let i = 0; i < 3; i++) {
+            if (this.value[i] > other.value[i]) {
+                return 1
+            } else if (this.value[i] < other.value[i]) {
+                return -1
+            }
+        }
+        return 0
+    }
+
+    // Return this - other, in days
+    difference(other) {
+        const initial = this.cmp(other)
+        if (initial === 0) {
+            return 0
+        } else if (initial > 0) {
+            // this > other
+            let d = new CalendarDay(other)
+            let diff = 0
+            while (d.cmp(other) > 0) {
+                diff++
+                d.increment()
+            }
+            return diff
+
+        } else {
+            // this < other
+            let d = new CalendarDay(this)
+            let diff = 0
+            while (d.cmp(other) < 0) {
+                diff++
+                d.increment()
+            }
+            return -diff
+        }
+    }
 }
 
 export function makeTrace(aoi, cases, per, daily, start_limit)
 {
     var cases_active
-    const day_ms = 24 * 60 * 60 * 1000
     if (cases === data_set.ACTIVE) {
         cases = data_set.CONFIRMED
         cases_active = true
@@ -28,16 +93,16 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
         return {'error': "ERROR: No " + cases + " data for " + aoi.name}
     }
 
-    const date = parseDate(aoi.data[cases + "-start"])
+    const day = new CalendarDay(aoi.data[cases + "-start"])
 
     let deaths_offset = 0
     let recovered_offset = 0
     if (cases_active) {
         if ('deaths' in aoi.data) {
-            deaths_offset = (parseDate(aoi.data["deaths-start"]) - date) / day_ms
+            deaths_offset = -day.difference(new CalendarDay(aoi.data["deaths-start"]))
         }
         if ('recovered' in aoi.data) {
-            recovered_offset = (parseDate(aoi.data["recovered-start"]) - date) / day_ms
+            recovered_offset = -day.difference(new CalendarDay(aoi.data["recovered-start"]))
         }
     }
 
@@ -45,20 +110,23 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
     var y = []
     var start_offset = 0
     for (let index = 0; index < aoi.data[cases].length; index++) {
-        x.push(new Date(date))
-        date.setDate(date.getDate() + 1)
+        x.push(day.date())
+        day.add(1)
 
         var value = aoi.data[cases][index]
         if (cases_active) {
-            if ('deaths' in aoi.data) {
+            if ('deaths' in aoi.data && index >= deaths_offset) {
                 value -= aoi.data['deaths'][index - deaths_offset]
             }
-            if ('recovered' in aoi.data) {
+            if ('recovered' in aoi.data && index >= recovered_offset) {
                 value -= aoi.data['recovered'][index - recovered_offset]
             }
         }
         if (value < start_limit) {
             start_offset = index
+        }
+        if (isNaN(value)) {
+            return {'error': `ERROR: NaN on ${day} for ${aoi.name}.`}
         }
         y.push(value)
     }
