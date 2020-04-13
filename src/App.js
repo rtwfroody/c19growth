@@ -234,7 +234,7 @@ class Dashboard extends React.Component
         var url = new URL(window.location)
 
         if (url.hash === "") {
-          url.hash = "rel;USA"
+          url.hash = "rel;a30;USA"
         }
 
         for (var part of url.hash.slice(1).split(";")) {
@@ -259,7 +259,7 @@ class Dashboard extends React.Component
             this.setState({scale: scale.LOG})
           } else if (part === "dly") {
             this.setState({daily: true})
-          } else if (part.match(/s\d+/)) {
+          } else if (part.match(/[as]\d+/)) {
             this.setState({from: part})
           } else {
             console.log("ERROR: Don't know what to do with " + part + " in URL (" + url.hash + ").")

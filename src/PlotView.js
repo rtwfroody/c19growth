@@ -116,13 +116,14 @@ export default class PlotView extends React.Component
                 break;
         }
 
-        var max_shift = 0;
-        var start_offset = Number.MAX_VALUE
+        var max_shift = 0
 
-        var start_limit = -1;
+        let start_limit = -1;
         if (this.props.from.match(/s\d+/)) {
             start_limit = parseInt(this.props.from.slice(1))
         }
+
+        var start_day = new Date()
 
         var errors = []
         for (const code in this.props.selected) {
@@ -144,7 +145,7 @@ export default class PlotView extends React.Component
             }
             traces.push(trace)
 
-            start_offset = Math.min(trace.start_offset, start_offset)
+            start_day = Math.min(start_day, trace.x[trace.start_offset])
 
             const shift = this.props.selected[code]
             max_shift = Math.max(max_shift, shift)
@@ -154,7 +155,7 @@ export default class PlotView extends React.Component
                 shifted.line = {}
                 Object.assign(shifted.line, trace.line)
                 shifted.line.dash = 'dash'
-    
+
                 if (shift > 0) {
                     var prefix = []
                     // TODO: There must be an idiomatic way to do this.
@@ -169,6 +170,13 @@ export default class PlotView extends React.Component
                 }
                 traces.push(shifted)
             }
+        }
+
+        if (this.props.from.match(/a\d+/)) {
+            const days_ago = parseInt(this.props.from.slice(1))
+            var ago_day = new Date()
+            ago_day.setDate(ago_day.getDate() - days_ago)
+            start_day = Math.max(ago_day, start_day)
         }
 
         if (this.props.scale === scale.LOG) {
@@ -189,12 +197,21 @@ export default class PlotView extends React.Component
             let date = new Date(dates[dates.length - 1])
             for (let i = 0; i < max_shift; i++) {
                 date.setDate(date.getDate() + 1)
-                future_dates.push((1900 + date.getYear()) + "-" + (1 + date.getMonth()) + "-" + date.getDate())
+                future_dates.push((1900 + date.getYear()) + "-" + (1 +
+                    date.getMonth()) + "-" + date.getDate())
             }
 
             for (let trace of traces) {
-                trace.y = trace.y.slice(start_offset, trace.y.length)
-                trace.x = trace.x.slice(start_offset, trace.x.length).concat(future_dates)
+                for (let i = 0; i < trace.x.length; i++) {
+                    if (trace.x[i] >= start_day) {
+                        if (i > 0) {
+                            trace.x = trace.x.slice(i)
+                            trace.y = trace.y.slice(i)
+                        }
+                        break
+                    }
+                    trace.x = trace.x.concat(future_dates)
+                }
             }
 
             return (

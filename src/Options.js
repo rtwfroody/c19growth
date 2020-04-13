@@ -50,6 +50,9 @@ export default class Options extends React.Component
                     <MenuItem value="s1">the 1st case</MenuItem>
                     <MenuItem value="s10">the 10th case</MenuItem>
                     <MenuItem value="s100">the 100th case</MenuItem>
+                    <MenuItem value="a15">15 days ago</MenuItem>
+                    <MenuItem value="a30">30 days ago</MenuItem>
+                    <MenuItem value="a60">60 days ago</MenuItem>
                 </Select>
                     using a
                 <Select
