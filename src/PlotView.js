@@ -128,7 +128,8 @@ export default class PlotView extends React.Component
         var errors = []
         for (const code in this.props.selected) {
             var trace = makeTrace(this.props.aoi[code], this.props.dataSet,
-                    this.props.dataPer, this.props.daily, start_limit)
+                    this.props.dataPer, this.props.daily, start_limit,
+                    this.props.smooth)
             if (trace.error) {
                 errors.push(trace.error)
                 continue

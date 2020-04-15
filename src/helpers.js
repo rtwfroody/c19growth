@@ -79,7 +79,7 @@ class CalendarDay {
     }
 }
 
-export function makeTrace(aoi, cases, per, daily, start_limit)
+export function makeTrace(aoi, cases, per, daily, start_limit, smooth)
 {
     var cases_active
     if (cases === data_set.ACTIVE) {
@@ -147,6 +147,35 @@ export function makeTrace(aoi, cases, per, daily, start_limit)
         for (let i = y.length-1; i > 0; i--) {
             y[i] -= y[i-1]
         }
+    }
+
+    if (smooth > 1) {
+        let weights = []
+        if ((smooth & 1) === 0) {
+            smooth++
+        }
+        for (let i = 1; i <= smooth / 2; i++) {
+            weights.push(i)
+        }
+        weights.push((smooth + 1) / 2)
+        for (let i = 1; i <= smooth / 2; i++) {
+            weights.push(Math.floor(smooth / 2) - i + 1)
+        }
+
+        const center = Math.floor(smooth / 2)
+        let smoothed = []
+        for (let i = 0; i < y.length; i++) {
+            let sum = 0
+            let total_weight = 0
+            for (let j = 0; j < weights.length; j++) {
+                if (i + j - center >= 0 && i + j - center < y.length) {
+                    sum += weights[j] * y[i + j - center]
+                    total_weight += weights[j]
+                }
+            }
+            smoothed.push(sum / total_weight)
+        }
+        y = smoothed
     }
 
     return {x: x, y: y, start_offset: start_offset}

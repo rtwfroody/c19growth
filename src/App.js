@@ -59,6 +59,9 @@ function UpdateUrl(props) {
   if (props.from !== "s1") {
     parts.push(props.from)
   }
+  if (props.smooth > 1) {
+    parts.push("smv" + props.smooth)
+  }
 
   for (const code in props.selected) {
     if (props.selected[code] !== 0) {
@@ -89,7 +92,8 @@ class Dashboard extends React.Component
       data_set: data_set.CONFIRMED,
       data_per: data_per.ABSOLUTE,
       focus: undefined,
-      from: "s1"
+      from: "s1",
+      smooth: 1
     }
   }
 
@@ -126,6 +130,7 @@ class Dashboard extends React.Component
   setDataSet(event) { this.setState({data_set: event.target.value}) }
   setDataPer(event) { this.setState({data_per: event.target.value}) } 
   setFrom(event) { this.setState({from: event.target.value}) }
+  setSmooth(event) { this.setState({smooth: event.target.value}) }
   setFocus(code) { this.setState({focus: code})}
 
   render() {
@@ -175,6 +180,7 @@ class Dashboard extends React.Component
                 scale={this.state.scale}
                 from={this.state.from}
                 focus={this.state.focus}
+                smooth={this.state.smooth}
               />
           </Grid>
 
@@ -186,6 +192,7 @@ class Dashboard extends React.Component
                 data_set={this.state.data_set} setDataSet={(e) => this.setDataSet(e)}
                 data_per={this.state.data_per} setDataPer={(e) => this.setDataPer(e)}
                 from={this.state.from} setFrom={(e) => this.setFrom(e)}
+                smooth={this.state.smooth} setSmooth={(e) => this.setSmooth(e)}
               />
             </Paper>
           </Grid>
@@ -220,6 +227,7 @@ class Dashboard extends React.Component
           scale={this.state.scale} setScale={(e) => this.setScale(e)}
           data_set={this.state.data_set}
           data_per={this.state.data_per}
+          smooth={this.state.smooth}
           from={this.state.from}
         />
       </div>
@@ -261,6 +269,8 @@ class Dashboard extends React.Component
             this.setState({daily: true})
           } else if (part.match(/[as]\d+/)) {
             this.setState({from: part})
+          } else if (part.match(/smv\d+/)) {
+            this.setState({smooth: parseInt(part.slice(3))})
           } else {
             console.log("ERROR: Don't know what to do with " + part + " in URL (" + url.hash + ").")
           }
