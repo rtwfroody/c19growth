@@ -93,6 +93,9 @@ def generate_acronym(word, length):
                 yield word[i].upper() + tail
 
 def make_code(path):
+    if len(path) > 1 and path[0] == "World":
+        path = path[1:]
+
     if path[0] == 'USA' and len(path) == 2:
         # For backwards compatiblity with old URLs.
         return "US-" + state_short[path[1]]
@@ -178,15 +181,18 @@ class Collector(object):
         self.alpha3 = bidict()
 
     def add_area(self, path):
-        root = self.area_tree
+        node = self.area_tree
+        partial = []
         for part in path:
-            root = root.setdefault(part, {'_path': path})
+            # Create a new list
+            partial = partial + [part]
+            node = node.setdefault(part, {'_path': partial})
 
     def debug(self, *args):
         if self.enable_debug:
             print(*args)
 
-    def tally(self, node, t, d, depth=0):
+    def tally_data(self, node, t, d, depth=0):
         data = node.get('_data', {})
         if t in data and d in data[t]:
             return data[t][d]
@@ -194,8 +200,19 @@ class Collector(object):
         for child in node:
             if child.startswith('_'):
                 continue
-            value += self.tally(node[child], t, d, depth + 1)
+            value += self.tally_data(node[child], t, d, depth + 1)
         return value
+
+    def tally_population(self, node, depth=0):
+        population = node.get('_population')
+        if population:
+            return population
+        population = 0
+        for child in node:
+            if child.startswith('_'):
+                continue
+            population += self.tally_population(node[child], depth + 1)
+        return population
 
     def get_node(self, path):
         node = self.area_tree
@@ -204,13 +221,23 @@ class Collector(object):
         return node
 
     def timeseries(self):
+        world_name = "World"
+        self.add_area([world_name])
+        world_code = make_code(world_name)
+        self.aoi[world_code] = {
+                'name': world_name,
+                'data': {},
+                'path': [world_name],
+                }
+
         for entry in read_csv(open_cached("https://coronadatascraper.com/timeseries.csv")):
             translate_country = {
                 'United States': 'USA'
             }
             entry['country'] = translate_country.get(entry['country'], entry['country'])
             entry['country'] = self.alpha3.inverse.get(entry['country'], entry['country'])
-            path = (entry['country'], entry['state'], entry['county'], entry['city'])
+            path = (world_name, entry['country'], entry['state'],
+                    entry['county'], entry['city'])
             path = [p for p in path if len(p)]
             self.add_area(path)
 
@@ -226,6 +253,8 @@ class Collector(object):
             except ValueError:
                 pass
 
+            node['_population'] = self.aoi[code].get('population')
+
             self.aoi[code].setdefault('data', {})
             for t in ('cases', 'deaths', 'recovered', 'tested'):
                 if len(entry[t]):
@@ -237,6 +266,7 @@ class Collector(object):
 
                 # Mark this as one we need to fill in later.
                 self.aoi[code]['data'].setdefault(t, {})[entry['date']] = None
+                self.aoi[world_code]['data'].setdefault(t, {})[entry['date']] = None
 
         allDates = set()
 
@@ -244,19 +274,26 @@ class Collector(object):
         for code, aoi in self.aoi.items():
             if 'name' not in self.aoi[code]:
                 aoi['name'] = aoi['path'][-1]
-            aoi['fullName'] = ", ".join(
-                [self.alpha3.get(aoi['path'][0], aoi['path'][0])] +
-                aoi['path'][1:])
+            if len(aoi['path']) > 1:
+                aoi['fullName'] = ", ".join(
+                    [self.alpha3.get(aoi['path'][1], aoi['path'][1])] +
+                    aoi['path'][2:])
+            else:
+                aoi['fullName'] = ", ".join(aoi['path'])
             if code.startswith('US-'):
                 aoi['name'] = state_name.get(aoi['path'][-1], aoi['path'][-1])
             else:
                 aoi['name'] = self.alpha3.get(aoi['path'][-1], aoi['path'][-1])
+            node = self.get_node(aoi['path'])
+            if not aoi.get('population'):
+                population = self.tally_population(node)
+                if population:
+                    aoi['population'] = population
             for t in aoi['data']:
                 for d in aoi['data'][t]:
                     allDates.add(d)
                     if aoi['data'][t][d] is None:
-                        node = self.get_node(aoi['path'])
-                        aoi['data'][t][d] = self.tally(node, t, d)
+                        aoi['data'][t][d] = self.tally_data(node, t, d)
 
         # Do another pass, translating date->value hashes into lists with a
         # value for each date.
