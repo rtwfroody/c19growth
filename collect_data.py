@@ -13,6 +13,8 @@ from pprint import pprint
 import json
 import collections
 from bidict import bidict
+from numpy.polynomial.polynomial import Polynomial
+import numpy as np
 
 state_name = {
 	'AL': 'Alabama',
@@ -370,7 +372,6 @@ class Collector(object):
 
     def measure(self):
         """Compute some metrics that give an idea of how well each area is doing."""
-        window = 4
         for aoi in self.aoi.values():
             if 'population' not in aoi:
                 print("No population info for", aoi['name'])
@@ -378,23 +379,26 @@ class Collector(object):
             if 'cases' not in aoi['data']:
                 print("No cases for", aoi['name'])
                 continue
+            if len(aoi['data']['cases']) < 2:
+                print("Insufficient cases for", aoi['name'])
+                continue
             distance = []
             pop = aoi['population']
             distance = [(v or 0)/pop for v in aoi['data']['cases']]
-            velocity = []
-            for i in range(len(distance)-1):
-                velocity.append(distance[i + 1] - distance[i])
-            acceleration = []
-            for i in range(len(velocity)-1):
-                acceleration.append(velocity[i + 1] - velocity[i])
-            jerk = []
-            for i in range(len(acceleration)-1):
-                jerk.append(acceleration[i + 1] - acceleration[i])
 
-            window = 7
-            aoi['velocity'] = sum(velocity[-window:]) / window
-            aoi['acceleration'] = sum(acceleration[-window:]) / window
-            aoi['jerk'] = sum(jerk[-window:]) / window
+            window = min(7, len(distance))
+
+            polynomial = Polynomial.fit(range(window), distance[-window:],
+                                        min(3, window))
+            coefficients = list(polynomial.convert().coef[1:])
+            # If the trailing coefficients are 0, they're not included in coef.
+            # Add them back.
+            while len(coefficients) < 3:
+                coefficients.append(0)
+
+            aoi['velocity'] = coefficients[0]
+            aoi['acceleration'] = coefficients[1]
+            aoi['jerk'] = coefficients[2]
 
     def build(self):
         self.all_csv()
