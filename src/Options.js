@@ -26,6 +26,10 @@ export default function Options(props)
                     <MenuItem value={3}>3 days</MenuItem>
                     <MenuItem value={5}>5 days</MenuItem>
                     <MenuItem value={7}>7 days</MenuItem>
+                    <MenuItem value={11}>11 days</MenuItem>
+                    <MenuItem value={15}>15 days</MenuItem>
+                    <MenuItem value={21}>21 days</MenuItem>
+                    <MenuItem value={31}>31 days</MenuItem>
                 </Select>
                 using a
                 <Select
