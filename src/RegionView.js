@@ -132,19 +132,17 @@ export default class RegionView extends React.Component
     let score = 0
     for (const part of search.split(/\W+/)) {
       if (lowerCode.includes(part)) {
-        score += 1
-      } else if (fullName.includes(part)) {
         score += 2
+      } else if (fullName.includes(part)) {
+        score += 1
       } else {
         return false
       }
     }
     if (this.props.aoi[code].population) {
-      score += 1 - this.props.aoi[code].velocity *
-        this.props.aoi[code].population / 1000000000
-    } else {
-      score += 1
+      score += this.props.aoi[code].population / 1000000000
     }
+    console.log(search, code, fullName, score)
     return score
   }
 
@@ -154,7 +152,7 @@ export default class RegionView extends React.Component
     let matches = []
     for (const code in props.aoi) {
       if (code in props.selected) {
-        matches.push([-1, code, props.aoi[code].fullName])
+        matches.push([10, code, props.aoi[code].fullName])
       } else {
         const m = this.matches(code)
         if (m) {
@@ -164,9 +162,9 @@ export default class RegionView extends React.Component
     }
     matches.sort(function(a, b) {
         if (a[0] > b[0]) {
-            return 1
-        } else if (a[0] < b[0]) {
             return -1
+        } else if (a[0] < b[0]) {
+            return 1
         } else if (a[2] > b[2]) {
             return 1
         } else {
