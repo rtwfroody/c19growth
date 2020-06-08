@@ -242,7 +242,7 @@ class Dashboard extends React.Component
         var url = new URL(window.location)
 
         if (url.hash === "") {
-          url.hash = "rel;dly;smv3;a30;USA"
+          url.hash = "rel;dly;smv7;a30;USA"
         }
 
         for (var part of url.hash.slice(1).split(";")) {
