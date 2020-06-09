@@ -7,6 +7,7 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import Button from '@material-ui/core/Button';
 
 import {makeTrace} from './helpers.js';
 
@@ -74,6 +75,16 @@ function (aoi, target_code, data_set, data_per)
 
 export default class MatchView extends React.Component
 {
+    constructor(props) {
+        super(props)
+        this.state = {
+            focus: undefined,
+            data_set: undefined,
+            data_per: undefined,
+            matches: undefined
+        }
+    }
+
     toggleRegion(code, shift) {
         if (this.props.selected[code] === shift) {
             this.props.setSelected(code, undefined)
@@ -82,20 +93,37 @@ export default class MatchView extends React.Component
         }
     }
 
+    compute() {
+        const matches = findMatches(this.props.aoi, this.props.focus,
+            this.props.data_set, this.props.data_per)
+        this.setState({
+            focus: this.props.focus,
+            data_set: this.props.data_set,
+            data_per: this.props.data_per,
+            matches: matches
+        })
+    }
+
     render() {
+        if (!(this.state.focus) ||
+                this.state.focus != this.props.focus) {
+            return <div>
+                <Button onClick={() => this.compute()}>
+                    Find matches for {this.props.aoi[this.props.focus].fullName}...
+                </Button>
+            </div>
+        }
+
         if (!(this.props.focus in this.props.aoi)) {
             return <div></div>
         }
-
-        const matches = findMatches(this.props.aoi, this.props.focus,
-            this.props.data_set, this.props.data_per)
 
         return (
             <div>
                 <p>{this.props.aoi[this.props.focus].fullName} matches:</p>
                 <Table size="small">
                 <TableBody>
-                {matches.map((m, i) => (
+                {this.state.matches.map((m, i) => (
                     <TableRow key={i} onClick={() => this.toggleRegion(m[1], m[2])}>
 
                       <TableCell padding="checkbox">
