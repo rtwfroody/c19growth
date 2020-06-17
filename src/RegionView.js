@@ -190,7 +190,7 @@ export default class RegionView extends React.Component
             <TableRow>
               <TableCell></TableCell>
               <TableCell>Name</TableCell>
-              <TableCell colSpan="3">Last Week</TableCell>
+              <TableCell colSpan="3">Last 2 Weeks</TableCell>
               <TableCell style={{ width: "9em" }}>Shift</TableCell>
             </TableRow>
           </TableHead>

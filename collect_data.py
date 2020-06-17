@@ -386,7 +386,7 @@ class Collector(object):
             pop = aoi['population']
             distance = [(v or 0)/pop for v in aoi['data']['cases']]
 
-            window = min(7, len(distance))
+            window = min(14, len(distance))
 
             polynomial = Polynomial.fit(range(window), distance[-window:],
                                         min(3, window))
