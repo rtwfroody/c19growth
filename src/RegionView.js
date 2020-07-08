@@ -142,7 +142,6 @@ export default class RegionView extends React.Component
     if (this.props.aoi[code].population) {
       score += this.props.aoi[code].population / 1000000000
     }
-    console.log(search, code, fullName, score)
     return score
   }
 

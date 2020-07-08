@@ -135,17 +135,21 @@ export function makeTrace(aoi, cases, per, daily, start_limit, smooth)
         if (!aoi.population) {
             return {'error': "ERROR: Don't know population for " + aoi.name + "."}
         }
-        y = y.map(x => 1000000.0 * x / aoi.population)
+        y = y.map(x => x == null ? null : 1000000.0 * x / aoi.population)
     } else if (per === data_per.BED) {
         if (!aoi.hospital_beds) {
             return {'error': "ERROR: Don't know number of hospital beds for " + aoi.name + "."}
         }
-        y = y.map(x => x / aoi.hospital_beds)
+        y = y.map(x => x == null ? null : x / aoi.hospital_beds)
     }
 
     if (daily) {
         for (let i = y.length-1; i > 0; i--) {
-            y[i] -= y[i-1]
+            if (y[i] == null || y[i-1] == null) {
+                y[i] = null
+            } else {
+                y[i] -= y[i - 1]
+            }
         }
     }
 

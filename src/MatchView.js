@@ -105,8 +105,8 @@ export default class MatchView extends React.Component
     }
 
     render() {
-        if (!(this.state.focus) ||
-                this.state.focus !== this.props.focus) {
+        if (this.props.focus && (!(this.state.focus) ||
+                this.state.focus !== this.props.focus)) {
             return <div>
                 <Button onClick={() => this.compute()}>
                     Find matches for {this.props.aoi[this.props.focus].fullName}...

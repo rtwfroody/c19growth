@@ -182,7 +182,7 @@ class Collector(object):
         self.area_tree = {}
         self.enable_debug = False
         self.alpha3 = bidict()
-        # Contents of all.csv, indexed by alpha-3.
+        # Contents of all.csv, indexed by countryID, as used in the timeseries data
         self.all = {}
 
     def add_area(self, path):
@@ -208,12 +208,17 @@ class Collector(object):
         data = node.get('_data', {})
         if t in data and d in data[t]:
             return data[t][d]
-        value = 0
+        values = []
         for child in node:
             if child.startswith('_'):
                 continue
-            value += self.tally_data(node[child], t, d, depth + 1)
-        return value
+            v = self.tally_data(node[child], t, d, depth + 1)
+            if not v is None:
+                values.append(v)
+        if len(values) > 0:
+            return sum(values)
+        else:
+            return None
 
     def tally_population(self, node, depth=0):
         population = node.get('_population')
@@ -236,19 +241,15 @@ class Collector(object):
         world_name = "World"
         allDates = set()
 
-        for entry in read_csv(open_cached("https://coronadatascraper.com/timeseries.csv")):
-            translate_country = {
-                'United States': 'USA'
-            }
-            entry['country'] = translate_country.get(entry['country'], entry['country'])
-            entry['country'] = self.alpha3.inverse.get(entry['country'], entry['country'])
-            path = (world_name,
-                    self.all.get(entry['country'], {'region':'Unknown'})['region'],
-                    entry['country'],
-                    entry['state'],
-                    entry['county'],
-                    entry['city'])
-            path = [p for p in path if len(p)]
+        data = json.load(open_cached(
+            "https://listaging-reportsbucket-1bjqfmfwopcdd.s3-us-west-1.amazonaws.com/beta/latest/timeseries-byLocation.json"))
+        for entry in data:
+            path = [world_name,
+                    self.all.get(entry['countryID'], {'region': 'Unknown'})['region']]
+            for part in ('countryName', 'stateName', 'countyName'):
+                if part in entry:
+                    path.append(entry[part])
+
             node = self.add_area(path)
 
             try:
@@ -257,35 +258,31 @@ class Collector(object):
                 pass
 
             aoi = self.aoi[node['_code']]
-            aoi.setdefault('data', {})
-            for t in ('cases', 'deaths', 'recovered', 'tested'):
-                if len(entry[t]):
-                    allDates.add(entry['date'])
-                    try:
-                        node.setdefault('_data', {}) \
-                                .setdefault(t, {})[entry['date']] = int(entry[t])
-                    except ValueError:
-                        pass
 
-                # Mark this as one we need to fill in later.
-                aoi['data'].setdefault(t, {})[entry['date']] = None
+            aoi.setdefault('data', {})
+            for date in entry['timeseries']:
+                allDates.add(date)
+                for t in ('cases', 'deaths', 'recovered', 'tested'):
+                    if t in entry['timeseries'][date]:
+                        try:
+                            node.setdefault('_data', {}) \
+                                    .setdefault(t, {})[date] = int(entry['timeseries'][date][t])
+                        except ValueError:
+                            pass
+
+                    # Mark this as one we need to fill in later.
+                    aoi['data'].setdefault(t, {})[date] = None
 
         allDates = sorted(list(allDates))
 
         # Now do a second pass, filling in missing data by summing up all the child nodes.
-        for code, aoi in self.aoi.items():
-            if 'name' not in self.aoi[code]:
-                aoi['name'] = aoi['path'][-1]
-            if len(aoi['path']) > 2:
-                aoi['fullName'] = ", ".join(
-                    [self.alpha3.get(aoi['path'][2], aoi['path'][2])] +
-                    aoi['path'][3:])
+        for aoi in self.aoi.values():
+            if len(aoi['path']) > 3:
+                aoi['fullName'] = ", ".join(aoi['path'][-3:])
             else:
                 aoi['fullName'] = ", ".join(aoi['path'])
-            if code.startswith('US-'):
-                aoi['name'] = state_name.get(aoi['path'][-1], aoi['path'][-1])
-            else:
-                aoi['name'] = self.alpha3.get(aoi['path'][-1], aoi['path'][-1])
+            aoi['name'] = aoi['path'][-1]
+
             node = self.get_node(aoi['path'])
             population = self.tally_population(node)
             if population:
@@ -302,28 +299,39 @@ class Collector(object):
         # Do another pass, translating date->value hashes into lists with a
         # value for each date.
         # TODO: we assume that allDates is contiguous
-        for code, aoi in self.aoi.items():
+        for aoi in self.aoi.values():
             for t in list(aoi['data'].keys()):
                 sequence = []
                 started = False
+                startDate = min(aoi['data'][t].keys())
+                endDate = max(aoi['data'][t].keys())
+                # Hide runs of None at the end
+                noneRun = 0
                 for d in allDates:
-                    if not started and aoi['data'][t].get(d):
+                    if aoi['data'][t].get(d):
                         started = True
-                        aoi['data'][t + "-start"] = d
-                    if started:
-                        sequence.append(aoi['data'][t].get(d))
+                    if started and d <= endDate:
+                        value = aoi['data'][t].get(d)
+                        if value is None:
+                            noneRun += 1
+                        else:
+                            sequence += [None] * noneRun
+                            noneRun = 0
+                            sequence.append(value)
                 if sequence:
                     aoi['data'][t] = sequence
+                    aoi['data'][t + "-start"] = startDate
                 else:
                     del aoi['data'][t]
 
     def save_data(self, path):
+        pprint(self.aoi)
         json.dump(self.aoi, open(path, "w"))
 
     def all_csv(self):
         for entry in read_csv(open("data/all.csv")):
             self.alpha3[entry['alpha-3']] = shorten(entry['name'])
-            self.all[entry['alpha-3']] = entry
+            self.all['iso1:' + entry['alpha-2']] = entry
 
     def population(self):
         for entry in read_csv(open("data/API_SP.POP.TOTL_DS2_en_csv_v2_821007.csv"), skip=4):
