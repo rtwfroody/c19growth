@@ -177,20 +177,14 @@ export default class PlotView extends React.Component
             const days_ago = parseInt(this.props.from.slice(1))
             var ago_day = new Date()
             ago_day.setDate(ago_day.getDate() - days_ago)
+            console.log("ago_day:", ago_day)
             start_day = Math.max(ago_day, start_day)
+            console.log("start_day:", new Date(start_day))
         }
 
         if (this.props.scale === scale.LOG) {
             layout.yaxis.type = 'log'
         }
-
-        const errorRender = errors.length > 0 ? (
-            <Typography color='error' component="span">
-            {errors.map((error, index) =>
-                <div key={index}>{error}<br /></div>
-            )}
-            </Typography>
-        ) : undefined;
 
         if (traces.length > 0) {
             const dates = traces[0].x
@@ -202,26 +196,43 @@ export default class PlotView extends React.Component
                     date.getMonth()) + "-" + date.getDate())
             }
 
+            var graph_traces = []
             for (let trace of traces) {
-                for (let i = 0; i < trace.x.length; i++) {
-                    if (trace.x[i] >= start_day) {
-                        if (i > 0) {
-                            trace.x = trace.x.slice(i)
-                            trace.y = trace.y.slice(i)
+                if (trace.x[trace.x.length - 1] < start_day) {
+                    // This entire trace precedes the start_day.
+                    errors.push(`Last data for ${trace.name} precedes ${new Date(start_day)}.`)
+                } else {
+                    for (let i = 0; i < trace.x.length; i++) {
+                        if (trace.x[i] >= start_day) {
+                            if (i > 0) {
+                                trace.x = trace.x.slice(i)
+                                trace.y = trace.y.slice(i)
+                            }
+                            break
                         }
-                        break
+                        trace.x = trace.x.concat(future_dates)
                     }
-                    trace.x = trace.x.concat(future_dates)
+                    graph_traces.push(trace)
                 }
             }
+        }
 
+        const errorRender = errors.length > 0 ? (
+            <Typography color='error' component="span">
+            {errors.map((error, index) =>
+                <div key={index}>{error}<br /></div>
+            )}
+            </Typography>
+        ) : undefined;
+
+        if (graph_traces.length > 0) {
             return (
                 // https://codesandbox.io/s/35loxpjmq has an example on how to make
                 // resizing also work.
                 <div>
                 <Plot
                     style={{ width: '100%', height: '100%' }}
-                    data={traces}
+                    data={graph_traces}
                     layout={layout} />
                 {errorRender}
                 </div>
