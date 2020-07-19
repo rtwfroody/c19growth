@@ -94,14 +94,24 @@ def generate_acronym(word, length):
             for tail in generate_acronym(word[i+1:], length - 1):
                 yield word[i].upper() + tail
 
-def make_code(path):
+def add_part_code(path, code):
+    code = code.upper()
     if len(path) > 2 and path[0] == "World":
         # Skip world and region
         path = path[2:]
 
-    if path[0] == 'USA' and len(path) == 2:
-        # For backwards compatiblity with old URLs.
-        return "US-" + state_short[path[1]]
+    text = "".join(path).lower()
+    text = re.sub(r'\W', '', text)
+    if text in part_code_dict:
+        return part_code_dict[text]
+
+    if text not in part_code_dict and code not in part_code_dict.inverse:
+        part_code_dict[text] = code
+
+def make_code(path):
+    if len(path) > 2 and path[0] == "World":
+        # Skip world and region
+        path = path[2:]
 
     text = "".join(path).lower()
     text = re.sub(r'\W', '', text)
@@ -250,6 +260,14 @@ class Collector(object):
                 if part in entry:
                     path.append(entry[part])
 
+            code = None
+            for part in entry['locationID'].split("#"):
+                if ":" in part:
+                    encoding, c = part.split(":")
+                    if encoding.startswith('iso'):
+                        code = c
+            if code:
+                add_part_code(path, code)
             node = self.add_area(path)
 
             try:
@@ -325,7 +343,6 @@ class Collector(object):
                     del aoi['data'][t]
 
     def save_data(self, path):
-        pprint(self.aoi)
         json.dump(self.aoi, open(path, "w"))
 
     def all_csv(self):
