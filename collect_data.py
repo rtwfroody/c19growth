@@ -278,13 +278,13 @@ class Collector(object):
             aoi = self.aoi[node['_code']]
 
             aoi.setdefault('data', {})
-            for date in entry['timeseries']:
+            for date in entry['dates']:
                 allDates.add(date)
                 for t in ('cases', 'deaths', 'recovered', 'tested'):
-                    if t in entry['timeseries'][date]:
+                    if t in entry['dates'][date]:
                         try:
                             node.setdefault('_data', {}) \
-                                    .setdefault(t, {})[date] = int(entry['timeseries'][date][t])
+                                    .setdefault(t, {})[date] = int(entry['dates'][date][t])
                         except ValueError:
                             pass
 
