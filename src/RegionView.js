@@ -244,7 +244,7 @@ export default class RegionView extends React.Component
                   </TableCell>
 
                   <TableCell>
-                    {this.sortNumber(match[1])}
+                    {Math.round(this.sortNumber(match[1])).toLocaleString()}
                   </TableCell>
 
                   <VelocityCell value={props.aoi[match[1]].velocity} />
