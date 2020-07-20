@@ -186,6 +186,7 @@ export default class PlotView extends React.Component
             layout.yaxis.type = 'log'
         }
 
+        var graph_traces = []
         if (traces.length > 0) {
             const dates = traces[0].x
             let future_dates = []
@@ -196,7 +197,6 @@ export default class PlotView extends React.Component
                     date.getMonth()) + "-" + date.getDate())
             }
 
-            var graph_traces = []
             for (let trace of traces) {
                 if (trace.x[trace.x.length - 1] < start_day) {
                     // This entire trace precedes the start_day.
