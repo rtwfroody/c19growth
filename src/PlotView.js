@@ -177,9 +177,7 @@ export default class PlotView extends React.Component
             const days_ago = parseInt(this.props.from.slice(1))
             var ago_day = new Date()
             ago_day.setDate(ago_day.getDate() - days_ago)
-            console.log("ago_day:", ago_day)
             start_day = Math.max(ago_day, start_day)
-            console.log("start_day:", new Date(start_day))
         }
 
         if (this.props.scale === scale.LOG) {
