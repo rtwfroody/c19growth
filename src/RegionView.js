@@ -11,6 +11,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
@@ -104,7 +106,8 @@ export default class RegionView extends React.Component
     super(props)
     this.state = {
       tabRegion: 0,
-      search: ""
+      search: "",
+      sort: "population"
     }
   }
 
@@ -125,22 +128,43 @@ export default class RegionView extends React.Component
     this.setState({search: value})
   }
 
+  setSort(value) {
+    this.setState({sort: value})
+  }
+
+  sortNumber(code) {
+    let aoi = this.props.aoi[code]
+    if (this.state.sort === "population") {
+      return aoi.population
+    } else if (this.state.sort === "cases" && aoi.data.cases) {
+      return aoi.data.cases[aoi.data.cases.length - 1]
+    } else if (this.state.sort === "cases/capita" && aoi.data.cases) {
+      return 1000000 * aoi.data.cases[aoi.data.cases.length - 1] / aoi.population
+    } else if (this.state.sort === "deaths" && aoi.data.deaths) {
+      return aoi.data.deaths[aoi.data.deaths.length - 1]
+    } else if (this.state.sort === "deaths/capita" && aoi.data.deaths) {
+      return 1000000 * aoi.data.deaths[aoi.data.deaths.length - 1] / aoi.population
+    }
+  }
+
   matches(code) {
     const search = this.state.search.toLowerCase()
     const lowerCode = code.toLowerCase()
     const fullName = this.props.aoi[code].fullName.toLowerCase()
+    const level = (this.props.aoi[code].level || "").toLowerCase()
     let score = 0
     for (const part of search.split(/\W+/)) {
       if (lowerCode.includes(part)) {
         score += 2
-      } else if (fullName.includes(part)) {
+      } else if (fullName.includes(part) ||
+          level.includes(part)) {
         score += 1
       } else {
         return false
       }
     }
     if (this.props.aoi[code].population) {
-      score += this.props.aoi[code].population / 1000000000
+      score += this.sortNumber(code) / 1000000000
     }
     return score
   }
@@ -189,6 +213,19 @@ export default class RegionView extends React.Component
             <TableRow>
               <TableCell></TableCell>
               <TableCell>Name</TableCell>
+              <TableCell>
+                <Select
+                  style={{ margin: '0.5em' }}
+                  value={this.state.sort}
+                  onChange={event => this.setSort(event.target.value)}
+                >
+                  <MenuItem value="population">Population</MenuItem>
+                  <MenuItem value="cases">Cases</MenuItem>
+                  <MenuItem value="deaths">Deaths</MenuItem>
+                  <MenuItem value="cases/capita">Cases/Capita</MenuItem>
+                  <MenuItem value="deaths/capita">Deaths/Capita</MenuItem>
+                </Select>
+              </TableCell>
               <TableCell colSpan="3">Last 2 Weeks</TableCell>
               <TableCell style={{ width: "9em" }}>Shift</TableCell>
             </TableRow>
@@ -204,6 +241,10 @@ export default class RegionView extends React.Component
 
                   <TableCell component="th" scope="row" onClick={() => this.regionClicked(match[1])}>
                     {props.aoi[match[1]].fullName}
+                  </TableCell>
+
+                  <TableCell>
+                    {this.sortNumber(match[1])}
                   </TableCell>
 
                   <VelocityCell value={props.aoi[match[1]].velocity} />

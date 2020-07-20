@@ -276,6 +276,7 @@ class Collector(object):
                 pass
 
             aoi = self.aoi[node['_code']]
+            aoi["level"] = entry["level"]
 
             aoi.setdefault('data', {})
             for date in entry['dates']:
