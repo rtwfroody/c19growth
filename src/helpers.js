@@ -154,30 +154,22 @@ export function makeTrace(aoi, cases, per, daily, start_limit, smooth)
     }
 
     if (smooth > 1) {
-        let weights = []
-        if ((smooth & 1) === 0) {
-            smooth++
-        }
-        for (let i = 1; i <= smooth / 2; i++) {
-            weights.push(i)
-        }
-        weights.push((smooth + 1) / 2)
-        for (let i = 1; i <= smooth / 2; i++) {
-            weights.push(Math.floor(smooth / 2) - i + 1)
-        }
-
-        const center = Math.floor(smooth / 2)
         let smoothed = []
+        let history = []
         for (let i = 0; i < y.length; i++) {
+            history.push(y[i])
+            if (history.length > smooth) {
+                history.shift()
+            }
             let sum = 0
-            let total_weight = 0
-            for (let j = 0; j < weights.length; j++) {
-                if (i + j - center >= 0 && i + j - center < y.length) {
-                    sum += weights[j] * y[i + j - center]
-                    total_weight += weights[j]
+            let count = 0
+            for (let j = 0; j < history.length; j++) {
+                if (history[j] != null) {
+                    sum += history[j]
+                    count += 1
                 }
             }
-            smoothed.push(sum / total_weight)
+            smoothed.push(sum / count)
         }
         y = smoothed
     }
