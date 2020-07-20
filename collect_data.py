@@ -321,13 +321,15 @@ class Collector(object):
             for t in list(aoi['data'].keys()):
                 sequence = []
                 started = False
-                startDate = min(aoi['data'][t].keys())
+                startDate = None
                 endDate = max(aoi['data'][t].keys())
                 # Hide runs of None at the end
                 noneRun = 0
                 for d in allDates:
                     if aoi['data'][t].get(d):
                         started = True
+                        if startDate is None:
+                            startDate = d
                     if started and d <= endDate:
                         value = aoi['data'][t].get(d)
                         if value is None:
