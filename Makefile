@@ -12,7 +12,7 @@ docollect:
 push:	dobuild docollect
 	rsync --progress -az --delete \
 	    $(PUBLISH) \
-	    relax.casualhacker.net:/home/tnewsome/www-hugo/content/covid19/
+	    relax.casualhacker.net:/home/tnewsome/www-hugo/static/covid19/
 
 publish:	push
 	ssh relax.casualhacker.net make -C www-hugo
