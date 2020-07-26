@@ -72,7 +72,8 @@ export default class PlotView extends React.Component
         let traces = []
 
         let layout = {
-            yaxis: {title: "", linecolor: '#ccc', linewidth: 1, mirror: true},
+            yaxis: {title: "", linecolor: '#ccc', linewidth: 1, mirror: true,
+                range:[0, 1]},
             xaxis: {linecolor: '#ccc', linewidth: 1, mirror: true},
             margin: {t:25, l:60, b:50}
         }
@@ -211,6 +212,8 @@ export default class PlotView extends React.Component
                         trace.x = trace.x.concat(future_dates)
                     }
                     graph_traces.push(trace)
+         
+                    layout.yaxis.range[1] = Math.max(layout.yaxis.range[1], Math.max(...trace.y))
                 }
             }
         }
