@@ -252,7 +252,7 @@ class Collector(object):
         allDates = set()
 
         data = json.load(open_cached(
-            "https://listaging-reportsbucket-1bjqfmfwopcdd.s3-us-west-1.amazonaws.com/beta/latest/timeseries-byLocation.json"))
+            "https://listaging-reportsbucket-1bjqfmfwopcdd.s3-us-west-1.amazonaws.com/v1/latest/timeseries-byLocation.json"))
         for entry in data:
             path = [world_name,
                     self.all.get(entry['countryID'], {'region': 'Unknown'})['region']]
