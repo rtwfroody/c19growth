@@ -15,6 +15,7 @@ import collections
 from bidict import bidict
 from numpy.polynomial.polynomial import Polynomial
 import numpy as np
+import statistics
 
 state_name = {
 	'AL': 'Alabama',
@@ -247,6 +248,39 @@ class Collector(object):
             node = node[part]
         return node
 
+    def squash_unlikely_values(self, node):
+        # Convert unlikely data values to None
+        lookaround = 5
+
+        if not '_data' in node:
+            return
+
+        for t in node['_data']:
+            dates = sorted(node['_data'][t].keys())
+            values = [node['_data'][t][d] for d in dates]
+            tolerance = 1
+            for i, date in enumerate(dates):
+                squash = False
+                value = values[i]
+                if value is None:
+                    continue
+                previous = [v for v in values[max(0, i-lookaround):i]
+                            if not v is None]
+                following = [v for v in values[i+1:i+2+lookaround]
+                            if not v is None]
+                if (previous and value < statistics.median(previous) - tolerance) or \
+                        (following and value > statistics.median(following) + tolerance):
+#                context = previous + following
+#                if len(context) > 3:
+#                    average = sum(context) / len(context)
+#                    stddev = statistics.stdev(context)
+#                    if value > average + (stddev + 1) * 3 or \
+#                            value < average - (stddev + 1) * 3:
+                    print("Squash %r %s in %s (%s) on %s (%r)" % (
+                        value, t, node['_path'][-1], node['_locationID'], date,
+                        previous + [value] + following))
+                    node['_data'][t][date] = None
+
     def timeseries(self):
         world_name = "World"
         allDates = set()
@@ -275,6 +309,7 @@ class Collector(object):
             except ValueError:
                 pass
 
+            node['_locationID'] = entry['locationID']
             aoi = self.aoi[node['_code']]
             aoi["level"] = entry["level"]
 
@@ -291,6 +326,7 @@ class Collector(object):
 
                     # Mark this as one we need to fill in later.
                     aoi['data'].setdefault(t, {})[date] = None
+            self.squash_unlikely_values(node)
 
         allDates = sorted(list(allDates))
 
