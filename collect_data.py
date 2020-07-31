@@ -288,11 +288,21 @@ class Collector(object):
         data = json.load(open_cached(
             "https://liproduction-reportsbucket-bhk8fnhv1s76.s3-us-west-1.amazonaws.com/v1/latest/timeseries-byLocation.json"))
         for entry in data:
+            if "(unassigned)" in entry['locationID']:
+                # Unassigned cases are ones that we know that happened in e.g.
+                # a state, but we don't know in which county they occurred.
+                # I'm ignoring them because they are rare, and included in the
+                # state count (in this case) regardless.
+                continue
+
             path = [world_name,
                     self.all.get(entry['countryID'], {'region': 'Unknown'})['region']]
             for part in ('countryName', 'stateName', 'countyName'):
                 if part in entry:
                     path.append(entry[part])
+
+            if "(unassigned)" in entry['locationID']:
+                path[-1] += " (unassigned)"
 
             code = None
             for part in entry['locationID'].split("#"):
@@ -301,6 +311,8 @@ class Collector(object):
                     if encoding.startswith('iso'):
                         code = c
             if code:
+                if "(unassigned)" in entry['locationID']:
+                    code += "-u"
                 add_part_code(path, code)
             node = self.add_area(path)
 
