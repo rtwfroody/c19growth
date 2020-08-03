@@ -181,10 +181,6 @@ export default class PlotView extends React.Component
             start_day = Math.max(ago_day, start_day)
         }
 
-        if (this.props.scale === scale.LOG) {
-            layout.yaxis.type = 'log'
-        }
-
         var graph_traces = []
         if (traces.length > 0) {
             const dates = traces[0].x
@@ -216,6 +212,13 @@ export default class PlotView extends React.Component
                     layout.yaxis.range[1] = Math.max(layout.yaxis.range[1], Math.max(...trace.y))
                 }
             }
+        }
+        layout.yaxis.range[1] *= 1.05
+
+        if (this.props.scale === scale.LOG) {
+            layout.yaxis.type = 'log'
+            // With a log scale, plotly interprets the range differently. :-(
+            layout.yaxis.range = undefined
         }
 
         const errorRender = errors.length > 0 ? (
