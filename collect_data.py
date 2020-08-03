@@ -248,16 +248,16 @@ class Collector(object):
             node = node[part]
         return node
 
-    def squash_unlikely_values(self, node):
+    def squash_unlikely_values(self, node, data_key):
         # Convert unlikely data values to None
         lookaround = 5
 
-        if not '_data' in node:
+        if not data_key in node:
             return
 
-        for t in node['_data']:
-            dates = sorted(node['_data'][t].keys())
-            values = [node['_data'][t][d] for d in dates]
+        for t in node[data_key]:
+            dates = sorted(node[data_key][t].keys())
+            values = [node[data_key][t][d] for d in dates]
             tolerance = 1
             for i, date in enumerate(dates):
                 squash = False
@@ -276,10 +276,11 @@ class Collector(object):
 #                    stddev = statistics.stdev(context)
 #                    if value > average + (stddev + 1) * 3 or \
 #                            value < average - (stddev + 1) * 3:
+                    path = node.get('path', node.get('_path'))
                     print("Squash %r %s in %s (%s) on %s (%r)" % (
-                        value, t, node['_path'][-1], node['_locationID'], date,
+                        value, t, path[-1], node.get('_locationID'), date,
                         previous + [value] + following))
-                    node['_data'][t][date] = None
+                    node[data_key][t][date] = None
 
     def timeseries(self):
         world_name = "World"
@@ -338,7 +339,7 @@ class Collector(object):
 
                     # Mark this as one we need to fill in later.
                     aoi['data'].setdefault(t, {})[date] = None
-            self.squash_unlikely_values(node)
+            self.squash_unlikely_values(node, '_data')
 
         allDates = sorted(list(allDates))
 
@@ -362,6 +363,7 @@ class Collector(object):
                         started = True
                     if started:
                         aoi.setdefault('data', {}).setdefault(t, {})[d] = value
+            self.squash_unlikely_values(aoi, 'data')
 
         # Do another pass, translating date->value hashes into lists with a
         # value for each date.
