@@ -122,7 +122,7 @@ export function makeTrace(aoi, cases, per, daily, start_limit, smooth)
                 value -= aoi.data['recovered'][index - recovered_offset]
             }
         }
-        if (value < start_limit) {
+        if (value >= start_limit && start_offset === 0) {
             start_offset = index
         }
         if (isNaN(value)) {
