@@ -119,11 +119,17 @@ export function makeTrace(aoi, cases, per, daily, start_limit, smooth)
 
         var value = aoi.data[cases][index]
         if (cases_active) {
-            if ('deaths' in aoi.data && index >= deaths_offset) {
+            if ('deaths' in aoi.data && index >= deaths_offset &&
+                    aoi.data['deaths'][index - deaths_offset] !== undefined) {
                 value -= aoi.data['deaths'][index - deaths_offset]
+            } else {
+                value = null
             }
-            if ('recovered' in aoi.data && index >= recovered_offset) {
+            if ('recovered' in aoi.data && index >= recovered_offset &&
+                    aoi.data['recovered'][index - recovered_offset] !== undefined) {
                 value -= aoi.data['recovered'][index - recovered_offset]
+            } else {
+                value = null
             }
         }
         if (value >= start_limit && start_offset === 0) {
