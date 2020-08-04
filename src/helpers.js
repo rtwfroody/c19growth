@@ -77,6 +77,10 @@ class CalendarDay {
             return -diff
         }
     }
+
+    toString() {
+        return this.date().toDateString()
+    }
 }
 
 export function makeTrace(aoi, cases, per, daily, start_limit, smooth)
