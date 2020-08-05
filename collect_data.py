@@ -260,16 +260,25 @@ class Collector(object):
             values = [node[data_key][t][d] for d in dates]
             tolerance = 1
             for i, date in enumerate(dates):
-                squash = False
                 value = values[i]
                 if value is None:
                     continue
                 previous = [v for v in values[max(0, i-lookaround):i]
                             if not v is None]
+                if len(previous) > 1:
+                    previous_median = statistics.median(previous)
+                else:
+                    previous_median = None
                 following = [v for v in values[i+1:i+2+lookaround]
                             if not v is None]
-                if (previous and value < statistics.median(previous) - tolerance) or \
-                        (following and value > statistics.median(following) + tolerance):
+                if len(following) > 1:
+                    following_median = statistics.median(following)
+                else:
+                    following_median = None
+                if (previous_median and value < previous_median - tolerance) or \
+                        (previous_median and following_median and
+                         previous_median < following_median and
+                         value > following_median + tolerance):
 #                context = previous + following
 #                if len(context) > 3:
 #                    average = sum(context) / len(context)
